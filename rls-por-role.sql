@@ -75,7 +75,7 @@ CREATE POLICY "artilharia_delete" ON artilharia FOR DELETE USING (get_user_role(
 
 CREATE POLICY "profissionais_insert" ON profissionais FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gestor', 'escalador'));
 CREATE POLICY "profissionais_update" ON profissionais FOR UPDATE USING (get_user_role() IN ('admin', 'gestor', 'escalador'));
-CREATE POLICY IF NOT EXISTS "profissionais_delete" ON profissionais FOR DELETE USING (get_user_role() IN ('admin', 'gestor', 'escalador'));
+CREATE POLICY "profissionais_delete" ON profissionais FOR DELETE USING (get_user_role() IN ('admin', 'gestor', 'escalador'));
 
 CREATE POLICY "escalas_insert" ON escalas_jogos FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gestor', 'escalador'));
 CREATE POLICY "escalas_update" ON escalas_jogos FOR UPDATE USING (get_user_role() IN ('admin', 'gestor', 'escalador'));
