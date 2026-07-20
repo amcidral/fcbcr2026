@@ -2598,109 +2598,127 @@
         const FCBCR_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACODSURBVHhe7V13WFTX9uW9mPZsz15QUcD2NMbEGDUxientpZrEbuwNRbAg0pUOgoA0QYrSEQG7qAiIFEFQwN57x0IbYIZZv73PzOjAgGJ/f/zW952PuXeas+4+e6+9zz5XLblc/jUNu/8fTzeYwJV4xSguLkbR4SLsTUvDzqQkJCYkIjIyCmFhYVi3bp34GxMdja2bNyN59y5k7NuHs2fOoKysVPkJrw5MoJ3y8UvBvXv3sH9/DiLCI+Hh4QVXVzf4ePsgPDwc27ZuFeQUFhTi1MmTOHv2LM6fO49z9PfkiRM4dPAgUvfswYb1cVgbGgoPd3e4ubrA13sVNiYm4MTxY5DJpMpvejl4KQRKKiqQmZmJ1f6r4eKyAqtXB2D37mScP38elZWVylc9He7TBTly+DA2JiTAy8MDK5ydEUEWy4S/DLxQAm/evIn169fDydEJawLXIDcnF+Vl5cpnXwyuXb0mLHmFq6sYe/emobq6Wvns88cLIfD2rVsIJ9/l5OCAhPgE3CIiXwUOk2X6+fph+XJb7Ny5C/Rblc88PzxXAqurqigAJMDB3k44/PLyxllbeVmZ+MtTuoo+g5FMU3z7tm1I37sXUqlUBA22aLYwRlVV46f+uXPn4OPjC1tbO+QeOKA8+3zw3AgsOHQIjvb2wv+U3L+vPPto5GRnw8LMHDu27xDW4eToiKQdO8Rz9suX4/ix43Cws6fgcEL4OJ6ahvPmCb+ZEB+Pe3fvIWD1akHy3bt3xfsehaKiItjZO2AVkXnnzh3l2WfDMxMok8louq6l6WovIufjwES5r3ATVnGH5Iu7m7uItkxGSFAwHGjaX758GfY2NnChgOBJgaGmpoai7EbsS0+Hl6cn1sfGigu2MTERa0NCsW9vOi5cuCAIvnr1qvKbGsamTZuwlC5cFl3AZ8UzEXj9+jU4E3GRJEGYyIZw+tQprFu7Vvgkth5fki3s4NkK2CqSd+9Gfl4+/H19hTVxwIkl3cdIIMvbm7aXrHQ7tpBbuHHjBiaOH49MkjsB/v7IP5AnLJQ/d9Qff4rvOJifjytXroj3NwR2FzbLlmFdeITyzNPhqQlkC7AwW4rsrEzlmfpxk36w76pV4gexBuQfakfTM4JId3F2wRWyNvZ158ki+XnG7Vu3aUoqHnMEvX79OipICqmm6d7UVJr+++FELuNAbi4FqVvYSVOfA1cqPRcWupam/zFxobZv2w6JRCLeVxdS+mx/klZOLi4kyhV++EnxVATyVDIzXUJT74zyTG2oW+O1a9fguVKR7DBBG+LisHXLFnHMxJSWPn02UXz7thDWRw4fwQGWSBS0pk+bKvzoRbIwvsisP3kGsLvgYFQf4jfEw9zSCsV3ipVnGo8nJjCN0i0rS4sGpQlPH2+vVVjl5fXAothXRdJUWe3nh5ycnGcWz49CHOnOPcnJNDOycP3adZEesnV50EVMpMBz6eJF5StrI4lcxGKTxbjxhJLriQhMJ8uztrQkYjQjHn2OyGl5utbQ41wiKiAgQPkscPToUWFxLwM8ZfmCBZEvzcrIIPI8RLp4gawyk44bwh7Ks01MTVB8t/ERutEEHiD9ZLbUVEwbdbC/4kio8iGu5NfYb7GeW+n+ausUHHA4t15FkfsiWR4/fhx27UiChYUFysob5xMbRSBHLJNFi+o1//v37yNozRoxRfjq7t+/XzjvsLXrGiVrXjQ4+GzamIhdSUnKMwoLdXdzE4GMZ05dxJOfdnZxUh49Go8lkC3LiqYtO+SGwDqOqyP8jwqkaXvxwsUGI9+rwo1rN0Rw40ATTBf86JEjQj5x+aw++Pl6IzwiTHnUMB5';
 
         async function gerarPdfEscala(jogoId) {
-            const escalas = await carregarEscalas();
-            const jogos = await carregarJogos();
-            const escala = escalas.find(e => e.jogo_id === jogoId);
-            const jogo = jogos.find(j => j.id === jogoId);
-            if (!escala || !jogo) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const margemX = 20;
-            let y = 15;
-
-            if (FCBCR_LOGO_BASE64.indexOf('data:image') === 0) {
-                doc.addImage(FCBCR_LOGO_BASE64, 'PNG', margemX, y - 12, 16, 16);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14);
-            doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas', margemX + (FCBCR_LOGO_BASE64.indexOf('data:image') === 0 ? 17 : 0), y);
-            y += 8;
-
-            doc.setFontSize(11);
-            const subtituloW = doc.getTextWidth('ESCALA DE JOGOS - TEMPORADA 2026');
-            doc.text('ESCALA DE JOGOS - TEMPORADA 2026', (210 - subtituloW) / 2, y +15);
-            y += 20;
-
-            doc.setDrawColor(0, 128, 0);
-            doc.setLineWidth(0.5);
-            doc.line(margemX, y, 190, y);
-            y += 10;
-
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('DADOS DA PARTIDA', margemX, y);
-            y += 8;
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-
-            const placar = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined && jogo.pontosCasa !== '') ? jogo.pontosCasa + ' x ' + jogo.pontosFora : 'A definir';
-
-            const dados = [
-                ['Mandante:', jogo.casa],
-                ['Visitante:', jogo.fora],
-                ['Data:', jogo.data],
-                ['Horario:', jogo.hora],
-                ['Local:', jogo.local || 'A definir'],
-                ['Rodada:', jogo.rodada || 'A definir'],
-                ['Status:', jogo.status || 'Agendado'],
-                ['Placar:', placar]
-            ];
-
-            dados.forEach(function(linha) {
-                doc.setFont('helvetica', 'bold');
-                doc.text(linha[0], margemX, y);
-                doc.setFont('helvetica', 'normal');
-                doc.text(linha[1], margemX + 35, y);
-                y += 7;
-            });
-
-            y += 5;
-            doc.setDrawColor(0, 128, 0);
-            doc.line(margemX, y, 190, y);
-            y += 10;
-
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('EQUIPE TECNICA', margemX, y);
-            y += 8;
-
-            doc.setFontSize(10);
-
-            const funcoesPdf = [
-                { chave: 'chefe', label: 'Chefe de Equipe' },
-                { chave: 'arbitro1', label: 'Arbitro 1' },
-                { chave: 'arbitro2', label: 'Arbitro 2' },
-                { chave: 'apontador', label: 'Apontador' },
-                { chave: 'cronometrista', label: 'Cronometrista' },
-                { chave: 'operador24', label: 'Operador de 24' },
-                { chave: 'classificadora', label: 'Classificadora' }
-            ];
-
-            funcoesPdf.forEach(function(f) {
-                if (escala[f.chave]) {
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(f.label + ':', margemX, y);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(escala[f.chave], margemX + 50, y);
-                    y += 7;
+            try {
+                const escalas = await carregarEscalas();
+                const jogos = await carregarJogos();
+                const escala = escalas.find(e => e.jogo_id === jogoId);
+                const jogo = jogos.find(j => j.id === jogoId);
+                if (!escala || !jogo) {
+                    console.error('Escala ou jogo nao encontrado', { jogoId, escalas, jogos });
+                    alert('Erro: Dados da escala ou jogo nao encontrados. Tente recarregar a pagina.');
+                    return;
                 }
-            });
 
-            y += 15;
-            doc.setDrawColor(0, 128, 0);
-            doc.line(margemX, y, 190, y);
-            y += 12;
+                if (!window.jspdf) {
+                    alert('Erro: Biblioteca jsPDF nao carregada. Verifique sua conexao com a internet.');
+                    return;
+                }
 
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Documento gerado em ' + new Date().toLocaleDateString('pt-BR') + ' as ' + new Date().toLocaleTimeString('pt-BR'), margemX, y);
-            y += 5;
-            doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas - 2026', margemX, y);
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const margemX = 20;
+                let y = 15;
 
-            const nomeArquivo = 'Escala_Jogo_' + jogo.casa.replace(/[^a-zA-Z0-9]/g, '_') + '_vs_' + jogo.fora.replace(/[^a-zA-Z0-9]/g, '_') + '_' + jogo.data.replace('/', '-') + '.pdf';
-            doc.save(nomeArquivo);
+                if (FCBCR_LOGO_BASE64 && FCBCR_LOGO_BASE64.indexOf('data:image') === 0) {
+                    try {
+                        doc.addImage(FCBCR_LOGO_BASE64, 'PNG', margemX, y - 12, 16, 16);
+                    } catch(e) {
+                        console.warn('Erro ao adicionar logo ao PDF:', e);
+                    }
+                }
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(14);
+                doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas', margemX + 20, y);
+                y += 8;
+
+                doc.setFontSize(11);
+                const subtituloW = doc.getTextWidth('ESCALA DE JOGOS - TEMPORADA 2026');
+                doc.text('ESCALA DE JOGOS - TEMPORADA 2026', (210 - subtituloW) / 2, y + 15);
+                y += 20;
+
+                doc.setDrawColor(0, 128, 0);
+                doc.setLineWidth(0.5);
+                doc.line(margemX, y, 190, y);
+                y += 10;
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('DADOS DA PARTIDA', margemX, y);
+                y += 8;
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+
+                const placar = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined && jogo.pontosCasa !== '') ? jogo.pontosCasa + ' x ' + jogo.pontosFora : 'A definir';
+
+                const dados = [
+                    ['Mandante:', jogo.casa],
+                    ['Visitante:', jogo.fora],
+                    ['Data:', jogo.data],
+                    ['Horario:', jogo.hora],
+                    ['Local:', jogo.local || 'A definir'],
+                    ['Rodada:', jogo.rodada || 'A definir'],
+                    ['Status:', jogo.status || 'Agendado'],
+                    ['Placar:', placar]
+                ];
+
+                dados.forEach(function(linha) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(linha[0], margemX, y);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(linha[1], margemX + 35, y);
+                    y += 7;
+                });
+
+                y += 5;
+                doc.setDrawColor(0, 128, 0);
+                doc.line(margemX, y, 190, y);
+                y += 10;
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('EQUIPE TECNICA', margemX, y);
+                y += 8;
+
+                doc.setFontSize(10);
+
+                const funcoesPdf = [
+                    { chave: 'chefe', label: 'Chefe de Equipe' },
+                    { chave: 'arbitro1', label: 'Arbitro 1' },
+                    { chave: 'arbitro2', label: 'Arbitro 2' },
+                    { chave: 'apontador', label: 'Apontador' },
+                    { chave: 'cronometrista', label: 'Cronometrista' },
+                    { chave: 'operador24', label: 'Operador de 24' },
+                    { chave: 'classificadora', label: 'Classificadora' }
+                ];
+
+                funcoesPdf.forEach(function(f) {
+                    if (escala[f.chave]) {
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(f.label + ':', margemX, y);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text(escala[f.chave], margemX + 50, y);
+                        y += 7;
+                    }
+                });
+
+                y += 15;
+                doc.setDrawColor(0, 128, 0);
+                doc.line(margemX, y, 190, y);
+                y += 12;
+
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Documento gerado em ' + new Date().toLocaleDateString('pt-BR') + ' as ' + new Date().toLocaleTimeString('pt-BR'), margemX, y);
+                y += 5;
+                doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas - 2026', margemX, y);
+
+                const nomeArquivo = 'Escala_Jogo_' + jogo.casa.replace(/[^a-zA-Z0-9]/g, '_') + '_vs_' + jogo.fora.replace(/[^a-zA-Z0-9]/g, '_') + '_' + jogo.data.replace('/', '-') + '.pdf';
+                doc.save(nomeArquivo);
+            } catch(e) {
+                console.error('Erro ao gerar PDF:', e);
+                alert('Erro ao gerar PDF: ' + e.message);
+            }
         }
 
         // ==========================================
