@@ -2652,14 +2652,14 @@
                 const placar = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined && jogo.pontosCasa !== '') ? jogo.pontosCasa + ' x ' + jogo.pontosFora : 'A definir';
 
                 const dados = [
-                    ['Mandante:', jogo.casa],
-                    ['Visitante:', jogo.fora],
-                    ['Data:', jogo.data],
-                    ['Horario:', jogo.hora],
-                    ['Local:', jogo.local || 'A definir'],
-                    ['Rodada:', jogo.rodada || 'A definir'],
-                    ['Status:', jogo.status || 'Agendado'],
-                    ['Placar:', placar]
+                    ['Mandante:', String(jogo.casa || '')],
+                    ['Visitante:', String(jogo.fora || '')],
+                    ['Data:', String(jogo.data || '')],
+                    ['Horario:', String(jogo.hora || '')],
+                    ['Local:', String(jogo.local || 'A definir')],
+                    ['Rodada:', String(jogo.rodada ?? 'A definir')],
+                    ['Status:', String(jogo.status || 'Agendado')],
+                    ['Placar:', String(placar)]
                 ];
 
                 dados.forEach(function(linha) {
