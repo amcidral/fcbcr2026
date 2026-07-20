@@ -2702,6 +2702,12 @@
 
                 doc.setFontSize(10);
 
+                const profissionaisLista = await carregarProfissionais();
+                const profMap = {};
+                profissionaisLista.forEach(p => {
+                    profMap[p.nome] = p;
+                });
+
                 const funcoesPdf = [
                     { chave: 'chefe', label: 'Chefe de Equipe' },
                     { chave: 'arbitro1', label: 'Arbitro 1' },
@@ -2714,10 +2720,12 @@
 
                 funcoesPdf.forEach(function(f) {
                     if (escala[f.chave]) {
+                        const prof = profMap[escala[f.chave]];
+                        const extra = prof ? ' (' + prof.categoria + ' | ' + prof.cidade + ')' : '';
                         doc.setFont('helvetica', 'bold');
                         doc.text(f.label + ':', margemX, y);
                         doc.setFont('helvetica', 'normal');
-                        doc.text(escala[f.chave], margemX + 50, y);
+                        doc.text(escala[f.chave] + extra, margemX + 50, y);
                         y += 7;
                     }
                 });
