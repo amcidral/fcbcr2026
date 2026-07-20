@@ -390,7 +390,8 @@ async function salvarEscalaJogo(escala) {
     apontador: escala.apontador,
     cronometrista: escala.cronometrista,
     operador24: escala.operador24,
-    classificadora: escala.classificadora
+    classificadora: escala.classificadora,
+    transporte: escala.transporte || []
   }, { onConflict: 'jogo_id' });
 
   if (error) { console.error('Erro ao salvar escala:', error); throw error; }

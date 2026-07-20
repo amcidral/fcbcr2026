@@ -1039,13 +1039,13 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Chefe de Equipe</label>
-                            <select id="escalaChefe" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaChefe" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Classificadora</label>
-                            <select id="escalaClassificadora" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaClassificadora" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
@@ -1058,13 +1058,13 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">�rbitro 1</label>
-                            <select id="escalaArbitro1" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaArbitro1" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">�rbitro 2</label>
-                            <select id="escalaArbitro2" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaArbitro2" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
@@ -1073,22 +1073,31 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Apontador</label>
-                            <select id="escalaApontador" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaApontador" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cronometrista</label>
-                            <select id="escalaCronometrista" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaCronometrista" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Operador de 24</label>
-                            <select id="escalaOperador24" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                            <select id="escalaOperador24" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div id="secaoTransporte" class="bg-amber-50 border border-amber-200 rounded-xl p-4 hidden">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-truck text-amber-600 text-sm"></i>
+                            <h5 class="text-xs font-black text-amber-800 uppercase tracking-wide">TRANSPORTE</h5>
+                        </div>
+                        <p class="text-[10px] text-amber-600 font-semibold mb-3">Marque quem precisa de transporte para o jogo</p>
+                        <div id="checkboxesTransporte" class="space-y-1.5"></div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -2585,6 +2594,20 @@
                             }
                         });
                         html += '</div>';
+
+                        if (esc.transporte && esc.transporte.length > 0) {
+                            html += '<div class="mt-2 pt-2 border-t border-amber-200/60">';
+                            html += '<div class="flex items-center gap-1.5">';
+                            html += '<i class="fa-solid fa-truck text-amber-500 text-[9px]"></i>';
+                            html += '<span class="text-[9px] font-black text-amber-700 uppercase">TRANSPORTE:</span>';
+                            html += '</div>';
+                            html += '<div class="flex flex-wrap gap-1 mt-1">';
+                            esc.transporte.forEach(function(nome) {
+                                html += '<span class="text-[9px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">' + nome + '</span>';
+                            });
+                            html += '</div></div>';
+                        }
+
                         html += '</div>';
                     });
                 }
@@ -2730,6 +2753,21 @@
                     }
                 });
 
+                if (escala.transporte && escala.transporte.length > 0) {
+                    y += 5;
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('TRANSPORTE', margemX, y);
+                    y += 8;
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    escala.transporte.forEach(function(nome) {
+                        doc.text(nome, margemX + 10, y);
+                        y += 6;
+                    });
+                    y += 3;
+                }
+
                 y += 15;
                 doc.setDrawColor(0, 128, 0);
                 doc.line(margemX, y, 190, y);
@@ -2870,8 +2908,63 @@
                 document.getElementById('escalaClassificadora').value = '';
             }
 
+            await atualizarTransporte();
+
             document.getElementById('escalaPasso1').classList.add('hidden');
             document.getElementById('escalaPasso2').classList.remove('hidden');
+        }
+
+        async function atualizarTransporte() {
+            const jogoId = parseInt(document.getElementById('escalaJogoId').value);
+            const profissionais = await carregarProfissionais();
+            const profMap = {};
+            profissionais.forEach(p => { profMap[p.nome] = p; });
+
+            const jogos = await carregarJogos();
+            const jogo = jogos.find(j => j.id === jogoId);
+            const classificacao = await carregarClassificacao();
+            const timeCasa = jogo ? classificacao.find(t => t.time === jogo.casa) : null;
+
+            let localComparacao = (jogo && jogo.local) || (timeCasa ? timeCasa.cidade : '');
+            localComparacao = localComparacao.trim().toUpperCase().replace(/[´`^~]/g, '');
+
+            const escalas = await carregarEscalas();
+            const escala = escalas.find(e => e.jogo_id === jogoId);
+            const savedTransport = escala ? (escala.transporte || []) : [];
+
+            const selects = ['escalaChefe', 'escalaArbitro1', 'escalaArbitro2', 'escalaApontador', 'escalaCronometrista', 'escalaOperador24', 'escalaClassificadora'];
+            const checksContainer = document.getElementById('checkboxesTransporte');
+            const secao = document.getElementById('secaoTransporte');
+
+            let html = '';
+            let temSelecionado = false;
+
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || !el.value) return;
+                const nome = el.value;
+                const prof = profMap[nome];
+                const cidadeProf = prof ? prof.cidade.trim().toUpperCase().replace(/[´`^~]/g, '').replace(/\s*-\s*/g, '') : '';
+
+                const precisaTransporte = cidadeProf && localComparacao
+                    && !localComparacao.includes(cidadeProf)
+                    && !cidadeProf.includes(localComparacao)
+                    && !cidadeProf.includes('--')
+                    && !cidadeProf.includes('');
+
+                const jaMarcado = savedTransport.includes(nome);
+
+                temSelecionado = true;
+                html += `
+                    <label class="flex items-center gap-2 cursor-pointer py-0.5">
+                        <input type="checkbox" name="transporte" value="${nome.replace(/"/g, '&quot;')}" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500" ${(precisaTransporte || jaMarcado) ? 'checked' : ''}>
+                        <span class="text-xs font-semibold text-slate-700">${nome} <span class="text-[10px] text-slate-400 font-normal">(${prof ? prof.cidade : '?'})</span></span>
+                    </label>
+                `;
+            });
+
+            checksContainer.innerHTML = html;
+            secao.classList.toggle('hidden', !temSelecionado);
         }
 
         function voltarPasso1Escala() {
@@ -2923,6 +3016,11 @@
                 return;
             }
 
+            const transporte = [];
+            document.querySelectorAll('#checkboxesTransporte input[name="transporte"]:checked').forEach(cb => {
+                transporte.push(cb.value);
+            });
+
             try {
                 await _dbSalvarEscalaJogo({
                     jogoId,
@@ -2932,7 +3030,8 @@
                     apontador,
                     cronometrista,
                     operador24,
-                    classificadora
+                    classificadora,
+                    transporte
                 });
                 alert('Escala salva com sucesso!');
                 fecharModalEscalaJogo();
