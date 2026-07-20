@@ -19,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
-    
+    <script>window._dbRefs = { salvarAtleta, atualizarAtleta, excluirAtleta, salvarEscalaJogo, salvarProfissional, excluirProfissional, excluirEquipe };</script>
     <script>
         tailwind.config = {
             theme: {
@@ -1103,14 +1103,14 @@
     </div>
 
     <script>
-        // Save references to Supabase helpers that will be overridden by inline names
-        const _dbSalvarAtleta = salvarAtleta;
-        const _dbAtualizarAtleta = atualizarAtleta;
-        const _dbExcluirAtleta = excluirAtleta;
-        const _dbSalvarEscalaJogo = salvarEscalaJogo;
-        const _dbSalvarProfissional = salvarProfissional;
-        const _dbExcluirProfissional = excluirProfissional;
-        const _dbExcluirEquipe = excluirEquipe;
+        // Use saved Supabase helper references
+        const _dbSalvarAtleta = window._dbRefs.salvarAtleta;
+        const _dbAtualizarAtleta = window._dbRefs.atualizarAtleta;
+        const _dbExcluirAtleta = window._dbRefs.excluirAtleta;
+        const _dbSalvarEscalaJogo = window._dbRefs.salvarEscalaJogo;
+        const _dbSalvarProfissional = window._dbRefs.salvarProfissional;
+        const _dbExcluirProfissional = window._dbRefs.excluirProfissional;
+        const _dbExcluirEquipe = window._dbRefs.excluirEquipe;
 
         // ==========================================
         // AUTENTICACAO VIA SUPABASE AUTH
