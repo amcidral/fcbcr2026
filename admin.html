@@ -2438,9 +2438,11 @@
                                 <p class="text-xs font-extrabold text-slate-800 leading-tight">${prof.nome}</p>
                                 <p class="text-[9px] font-bold mt-0.5">
                                     <span class="${coresFuncao[prof.funcao] || 'bg-slate-100 text-slate-600'} px-1.5 py-0.5 rounded">${prof.funcao}</span>
-                                    <span class="${coresCategoria[prof.categoria] || 'bg-slate-100 text-slate-600'} px-1.5 py-0.5 rounded ml-1">${prof.categoria}</span>
+                                    <span class="text-slate-400 mx-1">|</span>
+                                    <span class="${coresCategoria[prof.categoria] || 'bg-slate-100 text-slate-600'} px-1.5 py-0.5 rounded">${prof.categoria}</span>
+                                    <span class="text-slate-400 mx-1">|</span>
+                                    <span class="text-slate-500">${prof.cidade}</span>
                                 </p>
-                                <p class="text-[9px] text-slate-400 font-semibold mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${prof.cidade}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
