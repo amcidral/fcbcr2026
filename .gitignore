@@ -1,0 +1,10 @@
+# Supabase credentials (DO NOT COMMIT)
+supabase-config.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

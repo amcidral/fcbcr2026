@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCBCR - Campeonato Catarinense de BCR 2026</title>
+    <!-- Tailwind CSS para estilização rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones do FontAwesome para os menus -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Cores personalizadas do seu design */
+        .bg-fcbcr-dark { background-color: #002d72; } /* Azul Escuro */
+        .bg-fcbcr-accent { background-color: #f2a900; } /* Amarelo/Dourado */
+        .bg-fcbcr-blue { background-color: #0056b3; } /* Azul Dinâmico */
+        .text-fcbcr-accent { color: #f2a900; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+</head>
+<body class="bg-slate-100 font-sans flex h-screen overflow-hidden">
+
+    <!-- 1. BARRA LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-fcbcr-dark text-white flex flex-col justify-between h-full flex-shrink-0">
+        <div>
+            <!-- Logo e Nome -->
+            <div class="p-6 flex items-center gap-3 border-b border-blue-900">
+                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center overflow-hidden p-1 shrink-0">
+                    <img src="logos/fcbcr.png" alt="FCBCR" class="w-full h-full object-contain" onerror="this.style.display='none';this.parentElement.innerHTML='🏀'">
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl leading-tight tracking-wider">FCBCR</h1>
+                    <p class="text-xs text-blue-300"></p>
+                </div>
+            </div>
+
+            <!-- Navegação -->
+            <nav class="p-4 space-y-2">
+                <p class="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">Campeonato</p>
+                <a href="#" onclick="trocarAba('inicio')" id="menu-inicio" class="flex items-center gap-3 px-4 py-3 bg-fcbcr-blue text-white rounded-lg font-medium transition">
+                    <i class="fa-solid fa-house"></i> Início
+                </a>
+                <a href="#" onclick="trocarAba('classificacao')" id="menu-classificacao" class="flex items-center gap-3 px-4 py-3 text-blue-100 hover:bg-blue-900 rounded-lg transition">
+                    <i class="fa-solid fa-list-ol"></i> Classificação
+                </a>
+                <a href="#" onclick="trocarAba('resultados')" id="menu-resultados" class="flex items-center gap-3 px-4 py-3 text-blue-100 hover:bg-blue-900 rounded-lg transition">
+                    <i class="fa-solid fa-square-poll-vertical"></i> Resultados
+                </a>
+                <a href="#" onclick="trocarAba('calendario')" id="menu-calendario" class="flex items-center gap-3 px-4 py-3 text-blue-100 hover:bg-blue-900 rounded-lg transition">
+                    <i class="fa-solid fa-calendar-days"></i> Calendário de Jogos
+                </a>
+
+                <p class="text-xs font-semibold text-blue-400 uppercase tracking-wider pt-4 mb-2">Atletas</p>
+                <a href="#" onclick="trocarAba('cestinhas')" id="menu-cestinhas" class="flex items-center gap-3 px-4 py-3 text-blue-100 hover:bg-blue-900 rounded-lg transition">
+                    <i class="fa-solid fa-award"></i> Cestinhas
+                </a>
+            </nav>
+        </div>
+
+        <!-- Rodapé da Sidebar -->
+        <div class="p-4 border-t border-blue-900 text-xs text-blue-300 text-center">
+            <p>© 2026 FCBCR.</p>
+            <p>Todos os direitos reservados.</p>
+        </div>
+    </aside>
+
+    <!-- 2. ÁREA DE CONTEÚDO PRINCIPAL (MAIN CONTENT) -->
+    <div class="flex-1 flex flex-col h-full overflow-y-auto">
+        
+        <!-- BARRA SUPERIOR (HEADER) -->
+        <header class="bg-fcbcr-dark text-white px-8 py-4 flex justify-between items-center shadow-md flex-shrink-0">
+            <div>
+                <h2 class="text-xl font-bold tracking-wide">CAMPEONATO CATARINENSE DE BCR 2026</h2>
+                <p class="text-xs text-blue-300">Boletin Atualizado</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="admin.html" class="bg-fcbcr-accent text-slate-900 px-4 py-2 rounded-lg font-bold text-sm hover:bg-yellow-500 transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i> ÁREA ADMINISTRATIVA
+                </a>
+                <div class="text-right text-xs text-blue-200 border-l border-blue-800 pl-4">
+                    <p class="font-semibold">21 de Junho de 2025</p>
+                    <p>Sábado, 16:30</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- CORPO DA PÁGINA (DASHBOARD) -->
+        <main class="p-8 space-y-6">
+
+            <!-- ABA: INÍCIO (DASHBOARD) -->
+            <div id="aba-inicio" class="space-y-6">
+            
+            <!-- GRID DE TOPO: PRÓXIMO JOGO + STATS RÁPIDAS -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                
+                <!-- COLUNA ESQUERDA (Ocupa 2/3): CARD PRÓXIMO JOGO -->
+                <div id="bannerProximoJogo" class="xl:col-span-2 bg-gradient-to-r from-[#00224d] via-[#002d72] to-[#00224d] rounded-2xl p-6 shadow-lg border border-blue-900/50 relative overflow-hidden text-white flex flex-col justify-between">
+                    
+                    <!-- Selo Próximo Jogo -->
+                    <div class="absolute top-6 left-6 bg-fcbcr-accent text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider shadow">
+                        Próximo Jogo
+                    </div>
+
+                    <!-- Área Central: Confronto -->
+                    <div class="flex flex-col md:flex-row items-center justify-around py-8 px-4 gap-8">
+                        
+                        <!-- Equipe Casa -->
+                        <div class="flex flex-col items-center gap-3 w-full md:w-2/5 justify-end">
+                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center p-3 shadow-inner overflow-hidden">
+                                <img id="bannerCasaLogo" src="" alt="" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+                                <span id="bannerCasaEmoji" class="text-5xl" style="display:none">🏀</span>
+                            </div>
+                            <div class="text-center">
+                                <h3 id="bannerCasaNome" class="font-extrabold text-sm tracking-wide">--</h3>
+                                <p id="bannerCasaCidade" class="text-[10px] text-blue-300 uppercase font-semibold">--</p>
+                            </div>
+                        </div>
+
+                        <!-- Divisor VS -->
+                        <div class="flex flex-col items-center justify-center">
+                            <span class="text-fcbcr-accent font-black text-4xl italic tracking-wider">VS</span>
+                        </div>
+
+                        <!-- Equipe Fora -->
+                        <div class="flex flex-col items-center gap-3 w-full md:w-2/5 justify-start">
+                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center p-3 shadow-inner overflow-hidden">
+                                <img id="bannerForaLogo" src="" alt="" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+                                <span id="bannerForaEmoji" class="text-5xl" style="display:none">🏀</span>
+                            </div>
+                            <div class="text-center">
+                                <h3 id="bannerForaNome" class="font-extrabold text-sm tracking-wide">--</h3>
+                                <p id="bannerForaCidade" class="text-[10px] text-blue-300 uppercase font-semibold">--</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Rodapé do Card: Informações de Data e Local -->
+                    <div class="bg-blue-950/60 rounded-xl p-4 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 border border-blue-800/40 text-sm">
+                        <div class="flex items-center gap-2.5 text-blue-100">
+                            <i class="fa-solid fa-calendar-days text-fcbcr-accent text-base"></i>
+                            <span id="bannerData" class="font-semibold">--</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-blue-100">
+                            <i class="fa-regular fa-clock text-fcbcr-accent text-base"></i>
+                            <span id="bannerHora" class="font-semibold">--</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-blue-100 text-center md:text-left">
+                            <i class="fa-solid fa-location-dot text-fcbcr-accent text-base"></i>
+                            <span id="bannerLocal" class="font-semibold">--</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUNA DIREITA (Ocupa 1/3): CARDS DE STATS RÁPIDAS -->
+                <div class="flex flex-col gap-4 justify-between">
+                    
+                    <!-- Card 1: Equipes Cadastradas -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Equipes</p>
+                                <p class="text-3xl font-extrabold text-slate-800">6</p>
+                                <p class="text-xs text-slate-400">Equipes cadastradas</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Jogos Realizados -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-basketball"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Jogos Realizados</p>
+                                <p id="contadorJogosRealizados" class="text-3xl font-extrabold text-slate-800">0 <span class="text-lg font-normal text-slate-400">/ 36</span></p>
+                                <p class="text-xs text-slate-400">Atualizado via sistema</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Destaques -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 pb-2">Destaques</p>
+                        
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="bg-slate-50 rounded-lg p-2.5">
+                                <i class="fa-solid fa-user-check text-blue-500 text-sm mb-1"></i>
+                                <p id="totalAtletasCampeonato" class="text-lg font-extrabold text-slate-800 leading-tight">0</p>
+                                <p class="text-[10px] text-slate-500 leading-none">Atletas</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-lg p-2.5">
+                                <i class="fa-solid fa-star text-yellow-500 text-sm mb-1"></i>
+                                <p id="totalPontosCampeonato" class="text-lg font-extrabold text-slate-800 leading-tight">1.256</p>
+                                <p class="text-[10px] text-slate-500 leading-none">Pontos</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-lg p-2.5">
+                                <i class="fa-solid fa-chart-simple text-red-500 text-sm mb-1"></i>
+                                <p id="mediaGeralPontos" class="text-lg font-extrabold text-slate-800 leading-tight">69,8</p>
+                                <p class="text-[10px] text-slate-500 leading-none">Média</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- GRID INFERIOR: CLASSIFICAÇÃO + ÚLTIMOS RESULTADOS + TOP CESTINHAS -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- 1. CLASSIFICAÇÃO GERAL (4 colunas) -->
+                <div class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Classificação</h3>
+                        </div>
+                        <button onclick="trocarAba('classificacao')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver tudo</button>
+                    </div>
+                    <div class="overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-slate-400 text-[10px] font-bold uppercase">
+                                    <th class="py-1.5 px-1 text-center w-6"></th>
+                                    <th class="py-1.5 px-1 text-left">Equipe</th>
+                                    <th class="py-1.5 px-1 text-center">J</th>
+                                    <th class="py-1.5 px-1 text-center">V</th>
+                                    <th class="py-1.5 px-1 text-center">D</th>
+                                    <th class="py-1.5 px-1.5 text-center font-extrabold text-slate-700">Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoClassificacao" class="text-[11px] font-medium text-slate-700 divide-y divide-slate-50">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. ÚLTIMOS RESULTADOS (5 colunas) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Últimos Resultados</h3>
+
+                        </div>
+                        <button onclick="trocarAba('resultados')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver todos</button>
+                    </div>
+                    <div id="corpoResultados" class="space-y-2 flex-1">
+                    </div>
+                </div>
+
+                <!-- 3. TOP CESTINHAS (3 colunas = 25%) -->
+                <div class="lg:col-span-3 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">TOP 5 CESTINHAS</h3>
+                        </div>
+                    </div>
+                    <div id="corpoCestinhas" class="space-y-1.5 flex-1">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 4. BLOCO DE PRÓXIMAS PARTIDAS -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Próximas Partidas</h3>
+                    <button onclick="trocarAba('calendario')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver Calendário Completo →</button>
+                </div>
+
+                <div id="corpoProximasPartidas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Será preenchido dinamicamente pelo JavaScript -->
+                </div>
+            </div>
+
+            </div> <!-- fecha aba-inicio -->
+
+            <!-- ABA: CLASSIFICAÇÃO COMPLETA -->
+            <div id="aba-classificacao" class="hidden">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Classificação Geral</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 text-xs font-bold uppercase">
+                                    <th class="py-3 px-3 w-8 text-center"></th>
+                                    <th class="py-3 px-3">Equipes</th>
+                                    <th class="py-3 px-2 text-center">J</th>
+                                    <th class="py-3 px-2 text-center">V</th>
+                                    <th class="py-3 px-2 text-center">D</th>
+                                    <th class="py-3 px-2 text-center">PF</th>
+                                    <th class="py-3 px-2 text-center">PC</th>
+                                    <th class="py-3 px-3 text-center font-extrabold text-slate-700">Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoClassificacaoFull" class="text-sm font-medium text-slate-700 divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: RESULTADOS COMPLETOS -->
+            <div id="aba-resultados" class="hidden">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Resultados dos Jogos</h2>
+                    <div id="corpoResultadosFull" class="space-y-3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: CALENDÁRIO DE JOGOS -->
+            <div id="aba-calendario" class="hidden">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Calendário de Jogos</h2>
+                    <div id="corpoCalendarioFull" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: CESTINHAS COMPLETA -->
+            <div id="aba-cestinhas" class="hidden">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Cestinhas</h2>
+                    <div class="mb-4">
+                        <input type="text" id="filtroCestinhas" oninput="renderCestinhasFull()" placeholder="Buscar por nome ou time..." class="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div id="corpoCestinhasFull" class="space-y-3">
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DETALHES DO JOGO (Pontuadores) -->
+    <div id="modalJogoDetalhes" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-slate-200">
+                <div>
+                    <h3 id="modalJogoDetalhesTitulo" class="text-sm font-extrabold text-slate-800"></h3>
+                    <p id="modalJogoDetalhesInfo" class="text-[10px] font-bold text-slate-400 mt-0.5"></p>
+                </div>
+                <button onclick="fecharModalJogoDetalhes()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div id="modalJogoDetalhesCorpo" class="overflow-y-auto p-5 space-y-3 flex-1"></div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES DO JOGADOR -->
+    <div id="modalJogador" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-slate-200">
+                <div>
+                    <h3 id="modalJogadorNome" class="text-lg font-extrabold text-slate-800"></h3>
+                    <p id="modalJogadorTime" class="text-xs font-bold text-blue-600 uppercase"></p>
+                </div>
+                <button onclick="fecharModalJogador()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="flex items-center gap-4 mb-4 bg-slate-50 rounded-xl p-4">
+                    <div class="text-center">
+                        <p id="modalJogadorPontos" class="text-3xl font-black text-blue-600"></p>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Pontos Totais</p>
+                    </div>
+                    <div class="text-center">
+                        <p id="modalJogadorJogos" class="text-3xl font-black text-slate-800"></p>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Jogos</p>
+                    </div>
+                    <div class="text-center">
+                        <p id="modalJogadorMedia" class="text-3xl font-black text-green-600"></p>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">Média</p>
+                    </div>
+                </div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Desempenho por Jogo</h4>
+                <div id="modalJogadorDetalhes" class="space-y-2">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- LOGICA JAVASCRIPT DE RENDERIZAÇÃO REAL     -->
+    <!-- ========================================== -->
+    <script>
+        const emoticonsTimes = {
+            'CEPE/Raposas do Sul/Sesporte': '🛡️',
+            'APEDEB/FME BRUSQUE/CLASSE MÓVEIS': '🦅',
+            'ÁGUIAS/SESPORT CONCÓRDIA': '🦅',
+            'Spartacus/SESC/Sec. Esp. e Lazer/Caçador': '🛡️',
+            'AFLODEF/OMDA/FMEFLORIPA': '♿',
+            'Tigres Sobre Rodas/FME Criciúma': '🐯'
+        };
+
+        let _dados = { jogos: [], classificacao: [], atletasPorEquipe: {}, artilharia: [] };
+
+        function renderBannerProximoJogo() {
+            const jogos = _dados.jogos;
+            const classificacao = _dados.classificacao;
+
+            const agora = new Date();
+
+            const proximo = jogos
+                .filter(j => j.status !== 'Publicado')
+                .sort((a, b) => {
+                    const [dA, mA] = a.data.split('/');
+                    const [dB, mB] = b.data.split('/');
+                    const dataA = new Date(2026, parseInt(mA) - 1, parseInt(dA));
+                    const dataB = new Date(2026, parseInt(mB) - 1, parseInt(dB));
+                    return dataA - dataB;
+                })
+                .filter(j => {
+                    const [dia, mes] = j.data.split('/');
+                    const [hora, min] = (j.hora || '00:00').split(':');
+                    const dataJogo = new Date(2026, parseInt(mes) - 1, parseInt(dia), parseInt(hora), parseInt(min));
+                    return dataJogo > agora;
+                })[0];
+
+            if (!proximo) return;
+
+            const getCidade = (nome) => {
+                const cl = classificacao.find(t => t.time === nome);
+                return cl ? cl.cidade : '';
+            };
+
+            const getLogo = (nome) => {
+                const cl = classificacao.find(t => t.time === nome);
+                return cl && cl.logo ? cl.logo : '';
+            };
+
+            const logoCasa = getLogo(proximo.casa);
+            const logoFora = getLogo(proximo.fora);
+
+            const bannerCasaLogo = document.getElementById('bannerCasaLogo');
+            const bannerCasaEmoji = document.getElementById('bannerCasaEmoji');
+            if (logoCasa) {
+                bannerCasaLogo.src = logoCasa;
+                bannerCasaLogo.alt = proximo.casa;
+                bannerCasaLogo.style.display = 'block';
+                bannerCasaEmoji.style.display = 'none';
+            } else {
+                bannerCasaLogo.style.display = 'none';
+                bannerCasaEmoji.style.display = 'block';
+                bannerCasaEmoji.innerText = emoticonsTimes[proximo.casa] || '🏀';
+            }
+
+            const bannerForaLogo = document.getElementById('bannerForaLogo');
+            const bannerForaEmoji = document.getElementById('bannerForaEmoji');
+            if (logoFora) {
+                bannerForaLogo.src = logoFora;
+                bannerForaLogo.alt = proximo.fora;
+                bannerForaLogo.style.display = 'block';
+                bannerForaEmoji.style.display = 'none';
+            } else {
+                bannerForaLogo.style.display = 'none';
+                bannerForaEmoji.style.display = 'block';
+                bannerForaEmoji.innerText = emoticonsTimes[proximo.fora] || '🏀';
+            }
+
+            document.getElementById('bannerCasaNome').innerText = proximo.casa;
+            document.getElementById('bannerCasaCidade').innerText = getCidade(proximo.casa);
+
+            document.getElementById('bannerForaNome').innerText = proximo.fora;
+            document.getElementById('bannerForaCidade').innerText = getCidade(proximo.fora);
+
+            const partesData = proximo.data.split('/');
+            document.getElementById('bannerData').innerText = `${partesData[0]}/${partesData[1]}/2026`;
+            document.getElementById('bannerHora').innerText = proximo.hora;
+            document.getElementById('bannerLocal').innerText = proximo.local || 'A definir';
+        }
+
+        async function carregarDadosPublicos() {
+            _dados.jogos = await carregarJogos();
+            _dados.classificacao = await carregarClassificacao();
+            _dados.atletasPorEquipe = await carregarAtletasPorEquipe();
+            _dados.artilharia = await carregarArtilharia();
+
+            // 0. Preencher Banner Próximo Jogo
+            renderBannerProximoJogo();
+            setInterval(renderBannerProximoJogo, 60000);
+
+            // 1. Carregar Classificação
+            const classificacao = _dados.classificacao;
+            classificacao.sort((a, b) => {
+                const ptsA = a.pts ?? (a.v * 2 + a.d * 1);
+                const ptsB = b.pts ?? (b.v * 2 + b.d * 1);
+                if (ptsB !== ptsA) return ptsB - ptsA;
+                return (b.ptsPro - b.ptsContra) - (a.ptsPro - a.ptsContra);
+            });
+            const corpoClassificacao = document.getElementById('corpoClassificacao');
+            corpoClassificacao.innerHTML = '';
+
+            classificacao.forEach((t, i) => {
+                const totalJogos = t.v + t.d;
+                const totalPontos = t.pts ?? (t.v * 2 + t.d * 1); // Padrão FIBA (Vitória = 2, Derrota = 1)
+                
+                let badgeRank = 'bg-slate-100 text-slate-500 text-[10px]';
+                let medal = '';
+                if (i === 0) { badgeRank = 'bg-yellow-400 text-slate-900 font-black text-[11px] shadow-sm shadow-yellow-300'; medal = ''; }
+                if (i === 1) { badgeRank = 'bg-slate-300 text-slate-800 font-black text-[11px] shadow-sm shadow-slate-200'; medal = ''; }
+                if (i === 2) { badgeRank = 'bg-amber-500 text-white font-black text-[11px] shadow-sm shadow-amber-300'; medal = ''; }
+
+                corpoClassificacao.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-2.5 px-2 text-center">
+                            <span class="w-6 h-6 rounded-full ${badgeRank} flex items-center justify-center mx-auto">${medal}${i + 1}</span>
+                        </td>
+                        <td class="py-2.5 px-2 font-bold text-slate-800 truncate max-w-[120px]">
+                            <span>${emoticonsTimes[t.time] || '🏀'}</span> ${t.time}
+                        </td>
+                        <td class="py-2.5 px-1 text-center text-slate-500">${totalJogos}</td>
+                        <td class="py-2.5 px-1 text-center text-green-600 font-bold">${t.v}</td>
+                        <td class="py-2.5 px-1 text-center text-red-500 font-bold">${t.d}</td>
+                        <td class="py-2.5 px-2 text-center font-black text-blue-600 text-sm">${totalPontos}</td>
+                    </tr>
+                `;
+            });
+
+            // 2. Carregar Jogos (Publicados vs Em Andamento)
+            const jogos = _dados.jogos;
+            const corpoResultados = document.getElementById('corpoResultados');
+            const corpoProximasPartidas = document.getElementById('corpoProximasPartidas');
+            
+            corpoResultados.innerHTML = '';
+            corpoProximasPartidas.innerHTML = '';
+
+            const publicados = jogos.filter(j => j.status === 'Publicado');
+            const proximos = jogos.filter(j => j.status !== 'Publicado');
+
+            // Atualiza Widgets Superiores de Estatísticas
+            document.getElementById('contadorJogosRealizados').innerHTML = `${publicados.length} <span class="text-lg font-normal text-slate-400">/ 36</span>`;
+            
+            const atletasPorEquipe = _dados.atletasPorEquipe;
+            let totalAtletas = 0;
+            Object.values(atletasPorEquipe).forEach(lista => { totalAtletas += (lista || []).length; });
+            document.getElementById('totalAtletasCampeonato').innerText = totalAtletas;
+            
+            let totalPontosPro = publicados.reduce((acc, j) => acc + (j.pontosCasa || 0) + (j.pontosFora || 0), 0);
+            document.getElementById('totalPontosCampeonato').innerText = totalPontosPro;
+            
+            let mediaGeral = publicados.length > 0 ? (totalPontosPro / publicados.length).toFixed(1) : "0.0";
+            document.getElementById('mediaGeralPontos').innerText = mediaGeral;
+
+            // Renderizar Resultados
+            if (publicados.length === 0) {
+                corpoResultados.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum resultado de jogo publicado ainda.</p>`;
+            } else {
+                publicados.slice(0, 4).forEach(jogo => {
+                    const destaqueCasa = jogo.pontosCasa > jogo.pontosFora ? 'text-green-600' : 'text-slate-500';
+                    const destaqueFora = jogo.pontosFora > jogo.pontosCasa ? 'text-green-600' : 'text-slate-500';
+
+                    corpoResultados.innerHTML += `
+                        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+                            <div class="flex flex-col text-slate-400 font-bold shrink-0">
+                                <span>${jogo.data.split('/')[0]}</span>
+                                <span class="text-[10px] font-normal uppercase">MES</span>
+                            </div>
+                            <div class="flex-1 px-4 flex items-center justify-between font-bold text-slate-800">
+                                <span class="truncate">${jogo.casa}</span>
+                                <div class="flex items-center gap-2 bg-white px-2 py-1 rounded shadow-sm mx-2 shrink-0">
+                                    <span class="${destaqueCasa}">${jogo.pontosCasa}</span>
+                                    <span class="text-slate-300 font-normal">x</span>
+                                    <span class="${destaqueFora}">${jogo.pontosFora}</span>
+                                </div>
+                                <span class="truncate">${jogo.fora}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Renderizar Próximas Partidas
+            if (proximos.length === 0) {
+                corpoProximasPartidas.innerHTML = `<p class="text-xs text-slate-400 py-4 col-span-3">Nenhum próximo jogo agendado no momento.</p>`;
+            } else {
+                const getLogo = (nome) => {
+                    const cl = classificacao.find(t => t.time === nome);
+                    return cl && cl.logo ? cl.logo : '';
+                };
+
+                proximos.slice(0, 3).forEach((jogo, index) => {
+                    const logoCasa = getLogo(jogo.casa);
+                    const logoFora = getLogo(jogo.fora);
+                    const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+                    const partesData = jogo.data.split('/');
+                    const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
+
+                    corpoProximasPartidas.innerHTML += `
+                        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
+                                        <span>${partesData[0]}</span>
+                                        <span class="text-[8px] font-normal mt-0.5 uppercase">${mesLabel}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 font-bold">${jogo.hora}</div>
+                                </div>
+                                <span class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold uppercase">Rodada ${index + 15}</span>
+                            </div>
+
+                            <div class="flex items-center justify-around gap-2">
+                                <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                    <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                        <img src="${logoCasa}" alt="${jogo.casa}" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+                                        <span class="text-2xl" style="display:none">${emoticonsTimes[jogo.casa] || '🏀'}</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                                </div>
+
+                                <span class="text-fcbcr-accent font-black italic text-sm">VS</span>
+
+                                <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                    <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                        <img src="${logoFora}" alt="${jogo.fora}" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+                                        <span class="text-2xl" style="display:none">${emoticonsTimes[jogo.fora] || '🏀'}</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-50 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
+                                <i class="fa-solid fa-location-dot text-blue-500"></i>
+                                <span class="truncate">${jogo.local || 'A definir'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // 3. Carregar Cestinhas
+            const artilharia = _dados.artilharia;
+            const corpoCestinhas = document.getElementById('corpoCestinhas');
+            corpoCestinhas.innerHTML = '';
+
+            artilharia.slice(0, 5).forEach((atleta, index) => {
+                let badgeRank = 'bg-slate-200 text-slate-600';
+                if (index === 0) badgeRank = 'bg-yellow-400 text-slate-900';
+                if (index === 1) badgeRank = 'bg-slate-300 text-slate-900';
+                if (index === 2) badgeRank = 'bg-amber-600 text-white';
+
+                corpoCestinhas.innerHTML += `
+                    <div class="flex items-center justify-between p-2 bg-slate-50/55 rounded-lg border border-slate-100 hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full ${badgeRank} font-extrabold text-[10px] flex items-center justify-center">${index + 1}</span>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-800 leading-none cursor-pointer hover:text-blue-600 transition" onclick="abrirModalJogador(${atleta.id})">${atleta.nome}</p>
+                                <p class="text-[9px] font-bold text-blue-600 uppercase mt-0.5">${atleta.time}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-black text-slate-800">${atleta.pontos}</p>
+                            <p class="text-[8px] text-slate-400 uppercase font-bold">Pts</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Carrega as informações dinâmicas automaticamente ao abrir o portal público
+        window.onload = carregarDadosPublicos;
+
+        // Navegação por abas
+        const abas = ['inicio', 'classificacao', 'resultados', 'calendario', 'cestinhas'];
+
+        function trocarAba(aba) {
+            abas.forEach(a => {
+                document.getElementById('aba-' + a).classList.add('hidden');
+                const menuItem = document.getElementById('menu-' + a);
+                menuItem.classList.remove('bg-fcbcr-blue', 'text-white', 'font-medium');
+                menuItem.classList.add('text-blue-100', 'hover:bg-blue-900');
+            });
+            document.getElementById('aba-' + aba).classList.remove('hidden');
+            const menuItem = document.getElementById('menu-' + aba);
+            menuItem.classList.add('bg-fcbcr-blue', 'text-white', 'font-medium');
+            menuItem.classList.remove('text-blue-100', 'hover:bg-blue-900');
+
+            // Renderizar conteúdo da aba
+            if (aba === 'classificacao') renderClassificacaoFull();
+            if (aba === 'resultados') renderResultadosFull();
+            if (aba === 'calendario') renderCalendarioFull();
+            if (aba === 'cestinhas') renderCestinhasFull();
+        }
+
+        function renderClassificacaoFull() {
+            const classificacao = _dados.classificacao;
+            classificacao.sort((a, b) => {
+                const ptsA = a.pts ?? (a.v * 2 + a.d * 1);
+                const ptsB = b.pts ?? (b.v * 2 + b.d * 1);
+                if (ptsB !== ptsA) return ptsB - ptsA;
+                return (b.ptsPro - b.ptsContra) - (a.ptsPro - a.ptsContra);
+            });
+            const tbody = document.getElementById('corpoClassificacaoFull');
+            tbody.innerHTML = '';
+            classificacao.forEach((t, i) => {
+                const totalJogos = t.v + t.d;
+                const totalPontos = t.pts ?? (t.v * 2 + t.d * 1);
+                let badgeRank = 'bg-slate-100 text-slate-500';
+                if (i === 0) badgeRank = 'bg-yellow-400 text-slate-900 font-black shadow-sm shadow-yellow-300';
+                if (i === 1) badgeRank = 'bg-slate-300 text-slate-800 font-black shadow-sm shadow-slate-200';
+                if (i === 2) badgeRank = 'bg-amber-500 text-white font-black shadow-sm shadow-amber-300';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-3 text-center"><span class="w-7 h-7 rounded-full ${badgeRank} text-xs flex items-center justify-center mx-auto">${i + 1}</span></td>
+                        <td class="py-3 px-3 flex items-center gap-2 font-bold text-slate-800">
+                            ${t.logo ? `<img src="${t.logo}" class="w-6 h-6 object-contain rounded" onerror="this.style.display='none'">` : ''}
+                            <span>${t.time}</span>
+                        </td>
+                        <td class="py-3 px-2 text-center text-slate-500">${totalJogos}</td>
+                        <td class="py-3 px-2 text-center text-green-600 font-bold">${t.v}</td>
+                        <td class="py-3 px-2 text-center text-red-500 font-bold">${t.d}</td>
+                        <td class="py-3 px-2 text-center text-slate-500">${t.ptsPro || 0}</td>
+                        <td class="py-3 px-2 text-center text-slate-500">${t.ptsContra || 0}</td>
+                        <td class="py-3 px-3 text-center font-black text-blue-600 text-base">${totalPontos}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderResultadosFull() {
+            const jogos = _dados.jogos;
+            const classificacao = _dados.classificacao;
+            const container = document.getElementById('corpoResultadosFull');
+            container.innerHTML = '';
+            const getLogo = (nome) => {
+                const cl = classificacao.find(t => t.time === nome);
+                return cl && cl.logo ? cl.logo : '';
+            };
+            const publicados = jogos.filter(j => j.status === 'Publicado');
+            if (publicados.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhum resultado publicado ainda.</p>`;
+                return;
+            }
+            const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+            publicados.forEach(jogo => {
+                const partesData = jogo.data.split('/');
+                const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
+                const logoCasa = getLogo(jogo.casa);
+                const logoFora = getLogo(jogo.fora);
+                const destaqueCasa = jogo.pontosCasa > jogo.pontosFora ? 'text-green-600 font-black' : 'text-slate-600 font-bold';
+                const destaqueFora = jogo.pontosFora > jogo.pontosCasa ? 'text-green-600 font-black' : 'text-slate-600 font-bold';
+                container.innerHTML += `
+                    <div onclick="abrirModalJogoDetalhes(${jogo.id})" class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:bg-green-100 hover:border-green-300 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
+                                    <span>${partesData[0]}</span>
+                                    <span class="text-[8px] font-normal mt-0.5 uppercase">${mesLabel}</span>
+                                </div>
+                                <div class="text-xs text-slate-500 font-bold">${jogo.hora}</div>
+                            </div>
+                            <span class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">Finalizado</span>
+                        </div>
+                        <div class="flex items-center justify-around gap-2">
+                            <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-lg shadow-sm">
+                                <span class="${destaqueCasa} text-xl">${jogo.pontosCasa}</span>
+                                <span class="text-slate-300 font-normal">x</span>
+                                <span class="${destaqueFora} text-xl">${jogo.pontosFora}</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-green-200/50 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
+                            <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            <span class="truncate">${jogo.local || 'A definir'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderCalendarioFull() {
+            const jogos = _dados.jogos;
+            const classificacao = _dados.classificacao;
+            const container = document.getElementById('corpoCalendarioFull');
+            container.innerHTML = '';
+            const getLogo = (nome) => {
+                const cl = classificacao.find(t => t.time === nome);
+                return cl && cl.logo ? cl.logo : '';
+            };
+            const proximos = jogos.filter(j => j.status !== 'Publicado');
+            if (proximos.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhum jogo agendado.</p>`;
+                return;
+            }
+            const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+            proximos.forEach((jogo, index) => {
+                const partesData = jogo.data.split('/');
+                const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
+                const logoCasa = getLogo(jogo.casa);
+                const logoFora = getLogo(jogo.fora);
+
+                container.innerHTML += `
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
+                                    <span>${partesData[0]}</span>
+                                    <span class="text-[8px] font-normal mt-0.5 uppercase">${mesLabel}</span>
+                                </div>
+                                <div class="text-xs text-slate-500 font-bold">${jogo.hora}</div>
+                            </div>
+                            <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase">Agendado</span>
+                        </div>
+                        <div class="flex items-center justify-around gap-2">
+                            <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                            </div>
+                            <span class="text-fcbcr-accent font-black italic text-sm">VS</span>
+                            <div class="flex flex-col items-center gap-1.5 w-1/3">
+                                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
+                            <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            <span class="truncate">${jogo.local || 'A definir'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderCestinhasFull() {
+            const artilharia = _dados.artilharia;
+            const container = document.getElementById('corpoCestinhasFull');
+            const filtroEl = document.getElementById('filtroCestinhas');
+            const filtro = filtroEl ? filtroEl.value.trim().toLowerCase() : '';
+            container.innerHTML = '';
+            if (artilharia.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">Nenhuma estatistica registrada ainda.</p>`;
+                return;
+            }
+
+            let lista = artilharia;
+            if (filtro) {
+                lista = artilharia.filter(a => a.nome.toLowerCase().includes(filtro) || (a.time || '').toLowerCase().includes(filtro));
+            }
+
+            if (lista.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">Nenhum resultado para "${filtro}".</p>`;
+                return;
+            }
+
+            lista.forEach((atleta, index) => {
+                let badgeRank = 'bg-slate-200 text-slate-600';
+                if (index === 0) badgeRank = 'bg-yellow-400 text-slate-900';
+                if (index === 1) badgeRank = 'bg-slate-300 text-slate-900';
+                if (index === 2) badgeRank = 'bg-amber-600 text-white';
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full ${badgeRank} font-extrabold text-sm flex items-center justify-center">${index + 1}</span>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800 cursor-pointer hover:text-blue-600 transition" onclick="abrirModalJogador(${atleta.id})">${atleta.nome}</p>
+                                <p class="text-xs font-bold text-blue-600 uppercase mt-0.5">${atleta.time}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-black text-slate-800">${atleta.pontos}</p>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Pontos</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function abrirModalJogoDetalhes(jogoId) {
+            const jogos = _dados.jogos;
+            const artilharia = _dados.artilharia;
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return;
+
+            const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+            const partesData = jogo.data.split('/');
+            const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
+
+            document.getElementById('modalJogoDetalhesTitulo').innerText = jogo.casa + ' vs ' + jogo.fora;
+            document.getElementById('modalJogoDetalhesInfo').innerText = jogo.data + ' as ' + jogo.hora + (jogo.local ? ' | ' + jogo.local : '');
+
+            const corpo = document.getElementById('modalJogoDetalhesCorpo');
+
+            const pontuadoresCasa = [];
+            const pontuadoresFora = [];
+
+            artilharia.forEach(atleta => {
+                if (atleta.jogos) {
+                    const jogoAtleta = atleta.jogos.find(j => j.jogoId === jogoId);
+                    if (jogoAtleta && jogoAtleta.pontos > 0) {
+                        const dados = { nome: atleta.nome, pontos: jogoAtleta.pontos };
+                        if (atleta.time === jogo.casa) pontuadoresCasa.push(dados);
+                        else if (atleta.time === jogo.fora) pontuadoresFora.push(dados);
+                    }
+                }
+            });
+
+            pontuadoresCasa.sort((a, b) => b.pontos - a.pontos);
+            pontuadoresFora.sort((a, b) => b.pontos - a.pontos);
+
+            const totalCasa = pontuadoresCasa.reduce((s, p) => s + p.pontos, 0);
+            const totalFora = pontuadoresFora.reduce((s, p) => s + p.pontos, 0);
+
+            let html = '';
+
+            function renderarTime(nomeTime, pontosTime, pontuadores) {
+                let h = '<div class="bg-slate-50 rounded-xl p-3 border border-slate-100">';
+                h += '<div class="flex items-center justify-between mb-2">';
+                h += '<p class="text-xs font-extrabold text-slate-800 uppercase">' + nomeTime + '</p>';
+                h += '<p class="text-[10px] font-bold text-blue-600">' + pontuadores.length + ' pontuador(es) | Total: ' + pontosTime + ' pts</p>';
+                h += '</div>';
+                if (pontuadores.length === 0) {
+                    h += '<p class="text-[10px] text-slate-400 text-center py-2">Nenhum pontuador registrado</p>';
+                } else {
+                    h += '<div class="space-y-1">';
+                    pontuadores.forEach((p, i) => {
+                        const cor = i === 0 ? 'text-green-600' : 'text-slate-700';
+                        h += '<div class="flex items-center justify-between py-1 px-2 bg-white rounded-lg">';
+                        h += '<span class="text-[11px] font-semibold ' + cor + '">' + (i + 1) + '. ' + p.nome + '</span>';
+                        h += '<span class="text-[11px] font-black ' + cor + '">' + p.pontos + ' pts</span>';
+                        h += '</div>';
+                    });
+                    h += '</div>';
+                }
+                h += '</div>';
+                return h;
+            }
+
+            html += renderarTime(jogo.casa, totalCasa, pontuadoresCasa);
+            html += renderarTime(jogo.fora, totalFora, pontuadoresFora);
+
+            corpo.innerHTML = html;
+            document.getElementById('modalJogoDetalhes').classList.remove('hidden');
+        }
+
+        function fecharModalJogoDetalhes() {
+            document.getElementById('modalJogoDetalhes').classList.add('hidden');
+        }
+
+        function abrirModalJogador(id) {
+            const artilharia = _dados.artilharia;
+            const atleta = artilharia.find(a => a.id === id);
+            if (!atleta) return;
+
+            document.getElementById('modalJogadorNome').innerText = atleta.nome;
+            const classeLabel = atleta.classe ? `Classe ${atleta.classe}` : '';
+            document.getElementById('modalJogadorTime').innerText = atleta.time + (classeLabel ? ' — ' + classeLabel : '');
+            document.getElementById('modalJogadorPontos').innerText = atleta.pontos;
+
+            const todosJogos = _dados.jogos;
+            const publicados = todosJogos.filter(j => j.status === 'Publicado');
+            const jogosAtleta = [];
+            publicados.forEach(jogo => {
+                const ptsCasa = jogo.pontosAtletasCasa || [];
+                const ptsFora = jogo.pontosAtletasFora || [];
+                const ptsEsteJogo = [...ptsCasa, ...ptsFora].find(p => p.id === id);
+                if (ptsEsteJogo) {
+                    jogosAtleta.push({
+                        jogoId: jogo.id,
+                        timeDoAtleta: ptsEsteJogo.time,
+                        adversario: ptsEsteJogo.time === jogo.casa ? jogo.fora : jogo.casa,
+                        data: jogo.data,
+                        pontos: ptsEsteJogo.pontosNovos
+                    });
+                }
+            });
+
+            document.getElementById('modalJogadorJogos').innerText = jogosAtleta.length;
+            const media = jogosAtleta.length > 0 ? (atleta.pontos / jogosAtleta.length).toFixed(1) : '0.0';
+            document.getElementById('modalJogadorMedia').innerText = media;
+
+            const detalhes = document.getElementById('modalJogadorDetalhes');
+            detalhes.innerHTML = '';
+            if (jogosAtleta.length === 0) {
+                detalhes.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nenhum jogo registrado ainda.</p>';
+            } else {
+                jogosAtleta.forEach(j => {
+                    const partesData = j.data ? j.data.split('/') : [];
+                    detalhes.innerHTML += `
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-blue-600 text-white font-black text-xs px-2 py-1.5 rounded flex flex-col items-center leading-none">
+                                    <span>${partesData[0] || '--'}</span>
+                                    <span class="text-[8px] font-normal mt-0.5">${partesData[1] || ''}</span>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700">${j.timeDoAtleta} vs ${j.adversario}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-black text-blue-600">${j.pontos}</p>
+                                <p class="text-[9px] text-slate-400 uppercase font-bold">pontos</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('modalJogador').classList.remove('hidden');
+        }
+
+        function fecharModalJogador() {
+            document.getElementById('modalJogador').classList.add('hidden');
+        }
+
+        document.getElementById('modalJogador').addEventListener('click', function(e) {
+            if (e.target === this) fecharModalJogador();
+        });
+    </script>
+</body>
+</html>

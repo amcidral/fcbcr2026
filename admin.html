@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo — FCBCR 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'admin-dark': '#022c22', // Verde esmeralda bem escuro para a sidebar
+                        'admin-accent': '#10b981', // Verde esmeralda para destaques
+                        'admin-hover': '#064e3b'  // Verde para hover
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- OVERLAY LOGIN -->
+    <div id="loginOverlay" class="fixed inset-0 bg-admin-dark z-[100] flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 border border-slate-200">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 rounded-xl bg-admin-dark flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <img src="logos/fcbcr.png" alt="FCBCR" class="w-12 h-12 object-contain">
+                </div>
+                <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">Painel Administrativo</h2>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">FCBCR — Federacao Catarinense de BCR</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="Digite seu email" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha</label>
+                    <input type="password" id="loginSenha" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="Digite sua senha">
+                </div>
+                <p id="loginErro" class="text-[10px] text-red-500 font-bold hidden">Email ou senha invalidos!</p>
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar
+                </button>
+            </form>
+            <p class="text-center text-[9px] text-slate-300 mt-4">Acesso restrito a usuarios autorizados</p>
+        </div>
+    </div>
+
+    <!-- MODAL GERENCIAR USUARIOS -->
+    <div id="modalUsuarios" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[90vh]">
+            <div class="bg-admin-dark text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-users-gear text-emerald-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Gerenciar Usuarios</h4>
+                </div>
+                <button onclick="fecharModalUsuarios()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+            <div id="listaUsuarios" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+            <div class="p-4 border-t border-slate-100">
+                <button onclick="abrirFormNovoUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition"><i class="fa-solid fa-user-plus mr-1"></i> Novo Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM USUARIO -->
+    <div id="modalFormUsuario" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 p-6">
+            <h4 class="font-extrabold text-sm text-slate-800 uppercase tracking-wide mb-4" id="formUsuarioTitulo">Novo Usuario</h4>
+            <form onsubmit="salvarUsuario(event)" class="space-y-3">
+                <input type="hidden" id="usuarioEditId" value="">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                    <input type="text" id="usuarioNome" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="Ex: Joao Silva">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Usuario</label>
+                    <input type="text" id="usuarioLogin" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="Ex: joao.silva" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha</label>
+                    <input type="password" id="usuarioSenha" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="Deixe vazio para manter">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nivel de Acesso</label>
+                    <select id="usuarioRole" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition">
+                        <option value="gestor">Gestor — Cadastros e Resultados</option>
+                        <option value="escalador">Escalador — Somente Escalas</option>
+                        <option value="admin">Administrador — Acesso Total</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="fecharModalFormUsuario()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="w-64 bg-admin-dark text-white flex flex-col justify-between shrink-0 hidden md:flex border-r border-emerald-900/40">
+        <div>
+            <div class="p-6 border-b border-emerald-900/50 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-admin-accent flex items-center justify-center text-slate-950 font-black text-xl shadow-lg">
+                    <i class="fa-solid fa-gears text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-sm tracking-wider uppercase">FCBCR 2026</h1>
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Painel de Gestão</p>
+                </div>
+            </div>
+
+            <nav class="p-4 space-y-1.5">
+                <a href="#" onclick="rolarParaSecao('visao-geral')" class="menu-lateral data-role-gestor data-role-admin flex items-center gap-3 px-4 py-3 bg-admin-hover text-white rounded-lg text-xs font-bold tracking-wide transition">
+                    <i class="fa-solid fa-chart-line text-admin-accent text-sm"></i>
+                    Visao Geral
+                </a>
+                <a href="#" onclick="abrirModalSelecionarJogo()" class="menu-lateral data-role-gestor data-role-admin flex items-center gap-3 px-4 py-3 text-emerald-100/70 hover:bg-admin-hover hover:text-white rounded-lg text-xs font-bold tracking-wide transition">
+                    <i class="fa-solid fa-pen-to-square text-admin-accent text-sm"></i>
+                    Lancar Sumula
+                </a>
+                <a href="#" onclick="abrirModalProfissional()" class="menu-lateral data-role-gestor data-role-escalador data-role-admin flex items-center gap-3 px-4 py-3 text-emerald-100/70 hover:bg-admin-hover hover:text-white rounded-lg text-xs font-bold tracking-wide transition">
+                    <i class="fa-solid fa-user-tie text-admin-accent text-sm"></i>
+                    Cadastro Profissional
+                </a>
+                <a href="#" onclick="abrirModalEscalaJogo()" class="menu-lateral data-role-escalador data-role-gestor data-role-admin flex items-center gap-3 px-4 py-3 text-emerald-100/70 hover:bg-admin-hover hover:text-white rounded-lg text-xs font-bold tracking-wide transition">
+                    <i class="fa-solid fa-clipboard-list text-admin-accent text-sm"></i>
+                    Escala de Jogo
+                </a>
+                <a href="#" onclick="rolarParaSecao('escalacao-arbitros')" class="menu-lateral data-role-escalador data-role-gestor data-role-admin flex items-center gap-3 px-4 py-3 text-emerald-100/70 hover:bg-admin-hover hover:text-white rounded-lg text-xs font-bold tracking-wide transition">
+                    <i class="fa-solid fa-user-tie text-admin-accent text-sm"></i>
+                    Escalacao de Arbitros
+                </a>
+                <a href="#" onclick="abrirModalUsuarios()" class="menu-lateral data-role-admin-only flex items-center gap-3 px-4 py-3 text-emerald-100/70 hover:bg-admin-hover hover:text-white rounded-lg text-xs font-bold tracking-wide transition hidden">
+                    <i class="fa-solid fa-users-gear text-admin-accent text-sm"></i>
+                    Gerenciar Usuarios
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-emerald-900/50 space-y-3">
+            <div class="flex items-center gap-3 px-2">
+                <div id="sidebarUserAvatar" class="w-9 h-9 rounded-full bg-emerald-800 flex items-center justify-center text-sm font-bold border border-emerald-600">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p id="sidebarUserName" class="text-xs font-bold text-slate-100 truncate">Administrador</p>
+                    <span id="sidebarUserRole" class="text-[9px] text-emerald-400 font-bold uppercase">Nivel Master</span>
+                </div>
+            </div>
+            <button onclick="fazerLogout()" class="flex items-center justify-center gap-2 w-full py-2 bg-red-900/60 hover:bg-red-800 text-red-200 hover:text-white rounded-lg text-xs font-bold transition border border-red-800/50">
+                <i class="fa-solid fa-right-from-bracket text-xs"></i> Sair
+            </button>
+            <a href="index.html" class="flex items-center justify-center gap-2 w-full py-2 bg-emerald-900 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition border border-emerald-700/50">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                Voltar ao Portal Publico
+            </a>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-y-auto">
+        
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-slate-600 hover:text-slate-900 text-xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">Área Administrativa</h2>
+                    <p class="text-[11px] text-slate-400">Controle de campeonatos, equipes, súmulas e dados técnicos</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold border border-emerald-100">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Banco de Dados Online
+                </div>
+                <button class="relative w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+            </div>
+        </header>
+
+        <main id="visao-geral" class="p-8 space-y-6 flex-1">
+
+            <div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Atalhos de Lançamento Rápido</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                    
+                    <button id="btnAgendarPartida" onclick="abrirModalPartida()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg group-hover:bg-emerald-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Agendar Partida</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Definir data, local e adversarios</p>
+                        </div>
+                    </button>
+
+                    <button id="btnLancarSumula" onclick="abrirModalSelecionarJogo()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg group-hover:bg-amber-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Lancar Sumula / Placar</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Digitar placar, cestinhas e faltas</p>
+                        </div>
+                    </button>
+
+                    <button id="btnNovaEquipe" onclick="abrirModalEquipe()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg group-hover:bg-blue-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Nova Equipe</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Cadastrar clube, logo e cidade</p>
+                        </div>
+                    </button>
+
+                    <button id="btnAdicionarAtleta" onclick="abrirModalAtleta()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-lg group-hover:bg-purple-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Adicionar Atleta</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Novo registro e classe funcional</p>
+                        </div>
+                    </button>
+
+                    <button id="btnCadastroProfissional" onclick="abrirModalProfissional()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg group-hover:bg-indigo-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Cadastro Profissional</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Arbitros, mesarios e classificadores</p>
+                        </div>
+                    </button>
+
+                    <button id="btnEscalaJogo" onclick="abrirModalEscalaJogo()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-teal-500 hover:shadow transition flex items-center gap-4 text-left group">
+                        <div class="w-12 h-12 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-lg group-hover:bg-teal-500 group-hover:text-white transition shrink-0">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-slate-800">Escala de Jogo</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Escalar arbitros e equipe tecnica</p>
+                        </div>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                
+                <div id="fila-jogos" class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Fila de Publicação de Jogos</h3>
+                                <p class="text-[11px] text-slate-400">Confirme os placares e dados antes de publicar no Portal Público</p>
+                            </div>
+                            <span id="contadorPendentes" class="text-xs bg-amber-50 text-amber-800 font-bold px-2.5 py-1 rounded-md border border-amber-100">3 Pendentes</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-100 text-slate-400 text-[10px] font-bold uppercase">
+                                        <th class="py-2 px-2">Data / Hora</th>
+                                        <th class="py-2 px-2">Partida</th>
+                                        <th class="py-2 px-2 text-center">Placar Sugerido</th>
+                                        <th class="py-2 px-2 text-center">Status</th>
+                                        <th class="py-2 px-2 text-right">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaJogosFila" class="text-xs font-medium text-slate-700 divide-y divide-slate-50">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="escalacao-arbitros" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Escala de Árbitros</h3>
+                                <p class="text-[11px] text-slate-400">Jogos da rodada atual</p>
+                            </div>
+                            <button class="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition">Ver Escalas</button>
+                        </div>
+
+                        <div class="space-y-3.5">
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2">
+                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 text-[10px] font-bold text-slate-500">
+                                    <span>JOGO #19 — HOJE 15:00</span>
+                                    <span class="text-emerald-600">CONFIRMADA</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ??
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-extrabold text-slate-800 leading-none">Marcos Silva</p>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Árbitro Principal (FCA)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2">
+                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 text-[10px] font-bold text-slate-500">
+                                    <span>JOGO #20 — HOJE 17:00</span>
+                                    <span class="text-emerald-600">CONFIRMADA</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                                        ??
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-extrabold text-slate-800 leading-none">Roberto Souza</p>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Árbitro Principal (FCA)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="abrirModalEscalaJogo()" class="w-full mt-4 py-2.5 bg-slate-800 hover:bg-slate-950 text-white font-bold rounded-lg text-xs uppercase tracking-wider transition shadow-sm">
+                        Nova Escala de Jogo
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-white border-t border-slate-200 py-4 px-8 text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+            Federação Catarinense de Basquetebol em Cadeira de Rodas (FCBCR) © 2026
+        </footer>
+    </div>
+
+    <div id="modalSumula" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-8 max-h-[90vh]">
+            <div class="bg-emerald-950 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-pen-to-square text-emerald-400 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Lançar Súmula Detalhada</h4>
+                </div>
+                <button onclick="fecharModalSumula()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <form onsubmit="salvarSumula(event)" class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 flex items-center justify-between gap-4">
+                    <div class="text-center w-2/5 space-y-2">
+                        <p id="labelTimeCasa" class="font-black text-slate-800 text-base">TIME CASA</p>
+                        <input type="number" id="pontosCasa" min="0" required class="w-20 text-center bg-white border border-slate-300 rounded-lg py-2 text-lg font-black text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="0">
+                        <p class="text-[9px] text-slate-400 uppercase font-bold">Pontos Totais</p>
+                    </div>
+
+                    <span class="text-slate-300 font-black italic text-xl">VS</span>
+
+                    <div class="text-center w-2/5 space-y-2">
+                        <p id="labelTimeFora" class="font-black text-slate-800 text-base">TIME FORA</p>
+                        <input type="number" id="pontosFora" min="0" required class="w-20 text-center bg-white border border-slate-300 rounded-lg py-2 text-lg font-black text-slate-800 focus:outline-none focus:border-emerald-500 transition" placeholder="0">
+                        <p class="text-[9px] text-slate-400 uppercase font-bold">Pontos Totais</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="border-b border-slate-200 pb-2">
+                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Pontuação Individual por Atleta</h5>
+                        <p class="text-[10px] text-slate-400">Insira os pontos marcados por cada jogador que entrou em quadra</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <div class="bg-emerald-50/50 border border-emerald-100 rounded-lg px-3 py-1.5 flex justify-between items-center">
+                                <span class="text-[10px] font-extrabold text-emerald-800 uppercase">Atletas - Mandante</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase">Pts</span>
+                            </div>
+                            <div id="listaAtletasCasa" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-1.5 flex justify-between items-center">
+                                <span class="text-[10px] font-extrabold text-blue-800 uppercase">Atletas - Visitante</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase">Pts</span>
+                            </div>
+                            <div id="listaAtletasFora" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
+                    <button type="button" onclick="fecharModalSumula()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Publicar Súmula</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalPartida" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-emerald-950 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-calendar-plus text-emerald-400 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Agendar Nova Partida</h4>
+                </div>
+                <button onclick="fecharModalPartida()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <form onsubmit="salvarPartida(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Time Mandante</label>
+                        <select id="selectMandante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                            <option value="">Selecione...</option>
+                            <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Time Visitante</label>
+                        <select id="selectVisitante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                            <option value="">Selecione...</option>
+                            <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data</label>
+                        <input type="date" id="partidaData" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hora</label>
+                        <input type="time" id="partidaHora" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rodada</label>
+                        <input type="number" id="partidaRodada" min="1" max="20" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Ginásio</label>
+                    <input type="text" id="partidaLocal" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: Ginásio Abel Schulz — Joinville - SC">
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="fecharModalPartida()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Agendar Partida</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalEditarPartida" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-blue-800 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-pen-to-square text-blue-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Editar Partida</h4>
+                </div>
+                <button onclick="fecharModalEditarPartida()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <form onsubmit="salvarEdicaoPartida(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editPartidaId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Time Mandante</label>
+                        <select id="editSelectMandante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                            <option value="">Selecione...</option>
+                            <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Time Visitante</label>
+                        <select id="editSelectVisitante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                            <option value="">Selecione...</option>
+                            <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data</label>
+                        <input type="text" id="editPartidaData" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: 25/07">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hora</label>
+                        <input type="time" id="editPartidaHora" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rodada</label>
+                        <input type="number" id="editPartidaRodada" min="1" max="20" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: 5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Ginásio</label>
+                    <input type="text" id="editPartidaLocal" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: Ginásio Abel Schulz — Joinville - SC">
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Placar Casa</label>
+                        <input type="number" id="editPartidaPtCasa" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Placar Visitante</label>
+                        <input type="number" id="editPartidaPtFora" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
+                        <select id="editPartidaStatus" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                            <option value="Agendado">Agendado</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Aguardando Revisão">Aguardando Revisão</option>
+                            <option value="Publicado">Publicado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="fecharModalEditarPartida()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL SELECIONAR JOGO PARA SUMULA -->
+    <div id="modalSelecionarJogo" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[90vh]">
+            <div class="bg-amber-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-pen-to-square text-amber-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Selecionar Jogo para Súmula</h4>
+                </div>
+                <button onclick="fecharModalSelecionarJogo()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex flex-wrap items-center gap-3">
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filtrar por Status</label>
+                    <select id="filtroStatusJogo" onchange="renderizarListaJogosSelecao()" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 transition">
+                        <option value="">Todos</option>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Aguardando Revisão">Aguardando Revisão</option>
+                        <option value="Publicado">Publicados</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filtrar por Equipe</label>
+                    <input type="text" id="filtroEquipeJogo" oninput="renderizarListaJogosSelecao()" placeholder="Ex: CEPE" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 transition">
+                </div>
+            </div>
+
+            <!-- Lista de Jogos -->
+            <div id="listaJogosSelecao" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- MODAL ATLETA: Adicionar / Gerenciar Atletas -->
+    <div id="modalAtleta" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[92vh]">
+            <div class="bg-emerald-950 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-users text-emerald-400 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Gerenciar Atletas</h4>
+                </div>
+                <button onclick="fecharModalAtleta()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <!-- Abas -->
+            <div class="flex border-b border-slate-200 shrink-0">
+                <button id="abaAdicionar" onclick="trocarAbaAtleta('adicionar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-emerald-700 border-b-2 border-emerald-600 bg-emerald-50 transition">
+                    <i class="fa-solid fa-user-plus mr-1"></i> Adicionar Atleta
+                </button>
+                <button id="abaListar" onclick="trocarAbaAtleta('listar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-slate-400 hover:text-slate-700 border-b-2 border-transparent hover:border-slate-300 transition">
+                    <i class="fa-solid fa-list mr-1"></i> Ver / Editar Atletas
+                </button>
+            </div>
+
+            <!-- Aba Adicionar -->
+            <div id="painelAdicionar" class="flex-1 overflow-y-auto">
+                <form onsubmit="salvarAtleta(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                        <input type="text" id="atletaNome" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Digite o nome completo do atleta">
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nº Camisa</label>
+                            <input type="number" id="atletaCamisa" min="0" max="99" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Idade</label>
+                            <input type="number" id="atletaIdade" min="0" max="120" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 25">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Classe Funcional</label>
+                            <select id="atletaClasse" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                                <option value="1.0">1.0</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2.0">2.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3.0">3.0</option>
+                                <option value="3.5">3.5</option>
+                                <option value="4.0">4.0</option>
+                                <option value="4.5">4.5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Equipe / Clube</label>
+                        <select id="atletaEquipe" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                            <option value="">Selecione a equipe...</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="fecharModalAtleta()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Atleta</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aba Listar / Editar -->
+            <div id="painelListar" class="flex-1 overflow-y-auto hidden">
+                <div class="p-4 border-b border-slate-100">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filtrar por Equipe</label>
+                    <select id="filtroEquipeAtletas" onchange="renderizarListaAtletas()" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition">
+                        <option value="">Todas as Equipes</option>
+                    </select>
+                </div>
+                <div id="listaAtletasGerenciar" class="p-4 space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR ATLETA -->
+    <div id="modalEditarAtleta" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-blue-900 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-user-pen text-blue-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Editar Atleta</h4>
+                </div>
+                <button onclick="fecharModalEditarAtleta()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+            <form onsubmit="salvarEdicaoAtleta(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editAtletaId">
+                <input type="hidden" id="editAtletaEquipeOriginal">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                    <input type="text" id="editAtletaNome" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nº Camisa</label>
+                        <input type="number" id="editAtletaCamisa" min="0" max="99" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Idade</label>
+                        <input type="number" id="editAtletaIdade" min="0" max="120" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Classe</label>
+                        <select id="editAtletaClasse" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                            <option value="1.0">1.0</option>
+                            <option value="1.5">1.5</option>
+                            <option value="2.0">2.0</option>
+                            <option value="2.5">2.5</option>
+                            <option value="3.0">3.0</option>
+                            <option value="3.5">3.5</option>
+                            <option value="4.0">4.0</option>
+                            <option value="4.5">4.5</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Equipe / Clube</label>
+                    <select id="editAtletaEquipe" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </select>
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="fecharModalEditarAtleta()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edição</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EQUIPE: Cadastrar / Gerenciar Equipes -->
+    <div id="modalEquipe" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[92vh]">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-shield-halved text-blue-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Gerenciar Equipes</h4>
+                </div>
+                <button onclick="fecharModalEquipe()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <!-- Abas -->
+            <div class="flex border-b border-slate-200 shrink-0">
+                <button id="abaNovaEquipe" onclick="trocarAbaEquipe('nova')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-blue-700 border-b-2 border-blue-600 bg-blue-50 transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Cadastrar Equipe
+                </button>
+                <button id="abaListarEquipes" onclick="trocarAbaEquipe('listar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-slate-400 hover:text-slate-700 border-b-2 border-transparent hover:border-slate-300 transition">
+                    <i class="fa-solid fa-list mr-1"></i> Ver / Editar Equipes
+                </button>
+            </div>
+
+            <!-- Aba Cadastrar -->
+            <div id="painelNovaEquipe" class="flex-1 overflow-y-auto">
+                <form onsubmit="salvarEquipe(event)" class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome / Sigla da Equipe</label>
+                            <input type="text" id="equipeNome" required maxlength="20" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: CEPE">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo do Clube</label>
+                            <input type="text" id="equipeNomeCompleto" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: Centro Esportivo">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cidade</label>
+                            <input type="text" id="equipeCidade" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: Joinville">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Estado</label>
+                            <input type="text" id="equipeEstado" maxlength="2" value="SC" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="SC">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Arquivo da Logo (pasta logos/)</label>
+                        <input type="text" id="equipeLogo" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: cepe.png">
+                        <p class="text-[9px] text-slate-400 mt-1">Arquivo .png na pasta logos/ do projeto</p>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[10px] text-blue-700 font-semibold">
+                        <i class="fa-solid fa-circle-info mr-1"></i>
+                        A equipe será adicionada ao sistema e disponível para cadastro de atletas e agendamento de partidas.
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="fecharModalEquipe()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                        <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">
+                            <i class="fa-solid fa-plus mr-1"></i>Cadastrar Equipe
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aba Listar / Gerenciar -->
+            <div id="painelListarEquipes" class="flex-1 overflow-y-auto hidden">
+                <div id="listaEquipesGerenciar" class="p-4 space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR EQUIPE -->
+    <div id="modalEditarEquipe" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-blue-800 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-pen-to-square text-blue-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Editar Equipe</h4>
+                </div>
+                <button onclick="fecharModalEditarEquipe()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+            <form onsubmit="salvarEdicaoEquipe(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editEquipeNomeOriginal">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sigla / Nome</label>
+                        <input type="text" id="editEquipeNome" required maxlength="20" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                        <input type="text" id="editEquipeNomeCompleto" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cidade</label>
+                        <input type="text" id="editEquipeCidade" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Estado</label>
+                        <input type="text" id="editEquipeEstado" maxlength="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="SC">
+                    </div>
+                </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Arquivo da Logo (pasta logos/)</label>
+                        <input type="text" id="editEquipeLogo" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: cepe.png">
+                        <p class="text-[9px] text-slate-400 mt-1">Arquivo .png na pasta logos/ do projeto</p>
+                    </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="fecharModalEditarEquipe()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edição</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CADASTRO DE PROFISSIONAL -->
+    <div id="modalProfissional" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[92vh]">
+            <div class="bg-indigo-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-user-tie text-indigo-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Cadastro de Profissional</h4>
+                </div>
+                <button onclick="fecharModalProfissional()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <div class="flex border-b border-slate-200 shrink-0">
+                <button id="abaCadastrarProf" onclick="trocarAbaProfissional('cadastrar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-indigo-700 border-b-2 border-indigo-600 bg-indigo-50 transition">
+                    <i class="fa-solid fa-user-plus mr-1"></i> Cadastrar
+                </button>
+                <button id="abaListarProf" onclick="trocarAbaProfissional('listar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-slate-400 hover:text-slate-700 border-b-2 border-transparent hover:border-slate-300 transition">
+                    <i class="fa-solid fa-list mr-1"></i> Ver / Editar
+                </button>
+                <button id="abaImportarProf" onclick="trocarAbaProfissional('importar')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wide text-slate-400 hover:text-slate-700 border-b-2 border-transparent hover:border-slate-300 transition">
+                    <i class="fa-solid fa-file-import mr-1"></i> Importar
+                </button>
+            </div>
+
+            <div id="painelCadastrarProf" class="flex-1 overflow-y-auto">
+                <form onsubmit="salvarProfissional(event)" class="p-6 space-y-4">
+                    <input type="hidden" id="profissionalEditId" value="">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+                        <input type="text" id="profissionalNome" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition" placeholder="Digite o nome completo">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Funcao Principal</label>
+                            <select id="profissionalFuncao" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                                <option value="Arbitro (A)">Arbitro (A)</option>
+                                <option value="Mesario (A)">Mesario (A)</option>
+                                <option value="Classificador (A)">Classificador (A)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
+                            <select id="profissionalCategoria" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                                <option value="Internacional">Internacional</option>
+                                <option value="Nacional">Nacional</option>
+                                <option value="Estadual">Estadual</option>
+                                <option value="Novato">Novato</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cidade</label>
+                        <input type="text" id="profissionalCidade" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition" placeholder="Ex: Joinville">
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="limparFormProfissional()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Limpar</button>
+                        <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">
+                            <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="painelListarProf" class="flex-1 overflow-y-auto hidden">
+                <div class="p-4 border-b border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Filtrar por Funcao</label>
+                        <select id="filtroFuncaoProf" onchange="renderizarListaProfissionais()" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 transition">
+                            <option value="">Todas</option>
+                            <option value="Arbitro (A)">Arbitro (A)</option>
+                            <option value="Mesario (A)">Mesario (A)</option>
+                            <option value="Classificador (A)">Classificador (A)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="text" id="filtroBuscaProf" oninput="renderizarListaProfissionais()" placeholder="Buscar por nome ou cidade..." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+                <div id="listaProfissionais" class="p-4 space-y-2"></div>
+            </div>
+
+            <div id="painelImportarProf" class="flex-1 overflow-y-auto hidden p-4 space-y-3">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                    <p class="text-[10px] font-bold text-indigo-800 uppercase mb-1"><i class="fa-solid fa-info-circle mr-1"></i> Formato aceito</p>
+                    <p class="text-[10px] text-indigo-600 leading-relaxed">Cada linha deve conter: <strong>Nome | Funcao | Categoria | Cidade</strong> separados por TAB ou pipe (|).<br>Funcoes: <code>Arbitro (A)</code>, <code>Mesario (A)</code>, <code>Classificador (A)</code><br>Categorias: <code>Internacional</code>, <code>Nacional</code>, <code>Estadual</code>, <code>Novato</code></p>
+                </div>
+                <textarea id="textoImportarProf" rows="20" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-[10px] font-mono text-slate-800 focus:outline-none focus:border-indigo-500 transition resize-none" placeholder="Cole a lista aqui...">1 | Aldo Vicente Farias | Mesario (A) | Estadual | BAL. CAMBORIU
+2 | Amauri Valdir Stamm Junior | Arbitro (A) | Estadual | JOINVILLE
+3 | Anderson de Almeida Pereira | Mesario (A) | Nacional | Sao Jose
+4 | Andre Luis da Cunha | Arbitro (A) | Nacional | JOINVILLE
+5 | Andreia de Jesus Silva | Mesario (A) | Nacional | CAMPECHE
+6 | Ariovaldo Fernandes Carvalho | Arbitro (A) | Estadual | Itajai
+7 | Armando Hobus da Fonseca | Arbitro (A) | Nacional | BAL. CAMBORIU
+8 | Carlos Augusto Santos | Classificador (A) | Estadual | FLORIANOPOLIS
+9 | Carlos Henrique de Souza | Arbitro (A) | Estadual | CURITIBA
+10 | Cecilia Araujo Oliveira Telles da Silva | Mesario (A) | Nacional | BRUSQUE
+11 | Claudia Fernandes Carvalho | Mesario (A) | Nacional | --
+12 | Daiane dos Santos | Arbitro (A) | Novato | Itapema
+13 | Dailla Maria Camilo Paes | Arbitro (A) | Estadual | PENHA
+14 | Daliane Maria da Silva Bernardo | Mesario (A) | Nacional | --
+15 | Douglas de Oliveira Miguel | Mesario (A) | Estadual | Monte Carlos
+16 | Eberson Athayde Albuquerque | Arbitro (A) | Nacional | JOINVILLE
+17 | Edson Luiz Moraes | Mesario (A) | Nacional | --
+18 | Elias Francisco Caumo | Mesario (A) | Nacional | ITAJAI
+19 | Everton Conceicao da Silva | Mesario (A) | Nacional | --
+20 | Fabiane Pasuch | Mesario (A) | Nacional | --
+21 | Fabio Pedro Serafin | Mesario (A) | Estadual | Criciuma
+22 | Felipe Carvalho Araujo Costa | Mesario (A) | Nacional | --
+23 | Franciane Madruga de Matos | Classificador (A) | Nacional | Palhoca - SC
+24 | Gabriel Henrique Bordino Delgado | Arbitro (A) | Estadual | Florianopolis
+25 | Gabriel Willian dos Santos Ferreira | Mesario (A) | Nacional | --
+26 | Gabriela Melissa Cunha Andrioni | Mesario (A) | Nacional | --
+27 | Gerson Venturini | Mesario (A) | Nacional | --
+28 | Gilmar Cirino Andalicio | Mesario (A) | Nacional | --
+29 | Guilherme de Souza Lima | Mesario (A) | Nacional | --
+30 | Gustavo Nardon Pazinato | Mesario (A) | Nacional | --
+31 | Humberto Mateus Bosio | Mesario (A) | Nacional | BRUSQUE
+32 | Isabel Vieira Moreira | Mesario (A) | Nacional | ITAJUBA
+33 | Jaques Santos Filho | Arbitro (A) | Nacional | BAL. CAMBORIU
+34 | Jean Reis de Carvalho | Arbitro (A) | Estadual | Joinville
+35 | Joece Elaine Carabagiale | Mesario (A) | Nacional | --
+36 | Jorge Luis da Silva | Mesario (A) | Nacional | --
+37 | Jucileni da Paixao Moraes Homem | Mesario (A) | Nacional | Palhoca/SC
+38 | Julia Espindula Vicenti | Arbitro (A) | Estadual | Criciuma
+39 | Julia Lazarotto Albuquerque | Mesario (A) | Nacional | --
+40 | Karina Santos Guedes de Sa | Classificador (A) | Internacional | Sao Jose
+41 | Kelly Cristina Schutz | Mesario (A) | Nacional | SAO JOSE
+42 | Leandro Sehnem | Arbitro (A) | Nacional | ITAPEMA
+43 | LUCAS DOS SANTOS | Arbitro (A) | Estadual | CHAPECO
+44 | Lucas Rosa | Mesario (A) | Novato | Cacador
+45 | Lucia Ana Fritzen de Souza | Mesario (A) | Nacional | --
+46 | Luciano Rieper | Mesario (A) | Nacional | --
+47 | Luiz Gustavo Lalau de Farias | Mesario (A) | Estadual | CRICIUMA
+48 | Marcelo da Silva Schluter | Mesario (A) | Nacional | --
+49 | Marcelo Teles Girardi | Mesario (A) | Nacional | --
+50 | Marcos Alexander Henriquez | Mesario (A) | Nacional | --
+51 | Maria Cristina dos Santos Pires | Mesario (A) | Nacional | --
+52 | Maria Eduarda Marcelino Bernardo | Classificador (A) | Estadual | PALHOCA
+53 | Maria Eduarda Tomaz Luiz | Mesario (A) | Nacional | --
+54 | Neusa Braga de Medeiros Nicolak | Mesario (A) | Nacional | JOINVILLE
+55 | Oscar Daniel Bertolini Pereira | Arbitro (A) | Nacional | Chapeco
+56 | Patricia Luciene de Carvalho | Classificador (A) | Nacional | JOINVILLE
+57 | Paulo Cesar dos Santos Xavier | Mesario (A) | Estadual | CRICIUMA
+58 | Renato Fernandes Carvalho | Arbitro (A) | Estadual | Itajai
+59 | Roberto Vergani | Mesario (A) | Estadual | Concordia
+60 | Robson Carlos de Castro | Mesario (A) | Nacional | JOINVILLE
+61 | Rogerio Marques Leite | Arbitro (A) | Nacional | Florianopolis
+62 | Rosane Elisabete Franken Vasconcellos | Mesario (A) | Nacional | Itapema
+63 | SARITA CARDOSO | Classificador (A) | Estadual | ITAJAI
+64 | Sergio Luiz Nardi | Mesario (A) | Nacional | --
+65 | Simone Cristina Guardia | Mesario (A) | Nacional | --
+66 | Teonila Conte Vicenzi | Classificador (A) | Nacional | Quilombo
+67 | Vagner Rogerio Olimpio | Arbitro (A) | Estadual | Palhoca
+68 | Volmir Munareto | Mesario (A) | Nacional | Concordia</textarea>
+                <div class="flex items-center justify-between">
+                    <p id="resultadoImportacao" class="text-[10px] font-semibold text-slate-400"></p>
+                    <button onclick="importarProfissionais()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-5 rounded-lg transition"><i class="fa-solid fa-file-import mr-1"></i> Importar Lista</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ESCALA DE JOGO -->
+    <div id="modalEscalaJogo" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col my-6 max-h-[92vh]">
+            <div class="bg-teal-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-clipboard-list text-teal-300 text-lg"></i>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Escala de Jogo</h4>
+                </div>
+                <button onclick="fecharModalEscalaJogo()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
+            </div>
+
+            <!-- PASSO 1: Selecionar Jogo -->
+            <div id="escalaPasso1">
+                <div class="px-6 pt-4 pb-3 border-b border-slate-100">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-circle-1 text-teal-600 mr-1"></i> Selecione o Jogo</p>
+                </div>
+                <div id="listaJogosEscala" class="flex-1 overflow-y-auto p-4 space-y-2" style="max-height: 400px;"></div>
+            </div>
+
+            <!-- PASSO 2: Formulario de Escala -->
+            <div id="escalaPasso2" class="hidden">
+                <div class="px-6 pt-4 pb-3 border-b border-slate-100">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-circle-2 text-teal-600 mr-1"></i> Preencha a Escala</p>
+                    <p id="escalaJogoInfo" class="text-[11px] text-slate-400 mt-1"></p>
+                </div>
+                <form onsubmit="salvarEscalaJogo(event)" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <input type="hidden" id="escalaJogoId">
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Chefe de Equipe</label>
+                            <select id="escalaChefe" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Classificadora</label>
+                            <select id="escalaClassificadora" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="border-b border-slate-100 pb-2">
+                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Equipe Técnica</h5>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Árbitro 1</label>
+                            <select id="escalaArbitro1" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Árbitro 2</label>
+                            <select id="escalaArbitro2" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Apontador</label>
+                            <select id="escalaApontador" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cronometrista</label>
+                            <select id="escalaCronometrista" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Operador de 24</label>
+                            <select id="escalaOperador24" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="voltarPasso1Escala()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Voltar</button>
+                        <button type="submit" class="bg-teal-700 hover:bg-teal-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">
+                            <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar Escala
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Save references to Supabase helpers that will be overridden by inline names
+        const _dbSalvarAtleta = salvarAtleta;
+        const _dbAtualizarAtleta = atualizarAtleta;
+        const _dbExcluirAtleta = excluirAtleta;
+        const _dbSalvarEscalaJogo = salvarEscalaJogo;
+        const _dbSalvarProfissional = salvarProfissional;
+        const _dbExcluirProfissional = excluirProfissional;
+        const _dbExcluirEquipe = excluirEquipe;
+
+        // ==========================================
+        // AUTENTICACAO VIA SUPABASE AUTH
+        // ==========================================
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const senha = document.getElementById('loginSenha').value;
+            const erroEl = document.getElementById('loginErro');
+            try {
+                await fazerLogin(email, senha);
+                erroEl.classList.add('hidden');
+                document.getElementById('loginOverlay').classList.add('hidden');
+                await aplicarControleAcesso();
+            } catch(e) {
+                erroEl.textContent = 'Email ou senha invalidos!';
+                erroEl.classList.remove('hidden');
+            }
+        }
+
+        function fazerLogout() {
+            _supabase.auth.signOut().then(() => location.reload());
+        }
+
+        async function getUsuarioLogado() {
+            return await obterUsuarioLogado();
+        }
+
+        async function aplicarControleAcesso() {
+            const user = await getUsuarioLogado();
+            if (!user) return;
+
+            const role = user.role;
+
+            document.getElementById('sidebarUserName').textContent = user.nome;
+            const roleLabels = { admin: 'Administrador', gestor: 'Gestor', escalador: 'Escalador' };
+            const roleColors = { admin: 'text-emerald-400', gestor: 'text-blue-400', escalador: 'text-amber-400' };
+            document.getElementById('sidebarUserRole').textContent = roleLabels[role] || role;
+            document.getElementById('sidebarUserRole').className = 'text-[9px] font-bold uppercase ' + (roleColors[role] || 'text-emerald-400');
+            document.getElementById('sidebarUserAvatar').textContent = user.nome.substring(0, 2).toUpperCase();
+
+            document.querySelectorAll('.data-role-admin-only').forEach(el => {
+                el.classList.toggle('hidden', role !== 'admin');
+            });
+
+            document.querySelectorAll('.menu-lateral').forEach(el => {
+                if (role === 'admin') { el.style.display = ''; return; }
+                const isVisivel = el.classList.contains('data-role-' + role);
+                el.style.display = isVisivel ? '' : 'none';
+            });
+
+            const gestorBtns = ['btnAgendarPartida', 'btnLancarSumula', 'btnNovaEquipe', 'btnAdicionarAtleta', 'btnCadastroProfissional'];
+            const escaladorBtns = ['btnEscalaJogo', 'btnCadastroProfissional'];
+
+            if (role === 'admin') {
+                gestorBtns.concat(escaladorBtns).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+            } else if (role === 'gestor') {
+                gestorBtns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+                escaladorBtns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+            } else if (role === 'escalador') {
+                gestorBtns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+                escaladorBtns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+            }
+
+            const filaJogos = document.getElementById('fila-jogos');
+            if (filaJogos) filaJogos.style.display = (role === 'admin' || role === 'gestor') ? '' : 'none';
+        }
+
+        // ==========================================
+        // GERENCIAR USUARIOS (Supabase Auth)
+        // ==========================================
+
+        function abrirModalUsuarios() {
+            const container = document.getElementById('listaUsuarios');
+            container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-info-circle text-2xl block mb-2"></i>Gerenciamento de usuarios e feito via Supabase Auth Dashboard.</div>';
+            const modal = document.getElementById('modalUsuarios');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.transform').classList.remove('scale-95'); }, 10);
+        }
+
+        function fecharModalUsuarios() {
+            const modal = document.getElementById('modalUsuarios');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // ==========================================
+        // HELPERS DE ARTILHARIA
+        // ==========================================
+
+        async function salvarArtilhariaItem(item) {
+            const { error } = await _supabase.from('artilharia').upsert({
+                atleta_id: item.id,
+                pontos: item.pontos,
+                jogos: item.jogos || []
+            }, { onConflict: 'atleta_id' });
+            if (error) console.error('Erro ao salvar artilharia:', error);
+        }
+
+        async function excluirArtilhariaItem(atletaId) {
+            const { error } = await _supabase.from('artilharia').delete().eq('atleta_id', atletaId);
+            if (error) console.error('Erro ao excluir artilharia:', error);
+        }
+
+        // ==========================================
+        // FILA DE PUBLICACAO DE JOGOS
+        // ==========================================
+
+        async function renderizarFilaJogos() {
+            const jogos = await carregarJogos();
+            const container = document.getElementById('tabelaJogosFila');
+            const contador = document.getElementById('contadorPendentes');
+            container.innerHTML = '';
+
+            const pendentes = jogos.filter(j => j.status !== 'Publicado');
+            contador.innerText = `${pendentes.length} Pendentes`;
+
+            if (pendentes.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Nenhum jogo pendente de publicaÃ§Ã£o!</td></tr>`;
+                return;
+            }
+
+            pendentes.forEach(jogo => {
+                const placarSugerido = (jogo.pontosCasa !== null) ? `${jogo.pontosCasa} x ${jogo.pontosFora}` : '-- x --';
+                let classesStatus = 'bg-blue-100 text-blue-800';
+                if (jogo.status === 'Aguardando RevisÃ£o') classesStatus = 'bg-amber-100 text-amber-800';
+
+                container.innerHTML += `
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-3 px-2">
+                            <p class="font-bold text-slate-800">${jogo.data}</p>
+                            <p class="text-[10px] text-slate-400">${jogo.hora}</p>
+                        </td>
+                        <td class="py-3 px-2 font-bold text-slate-800">
+                            <span>${jogo.casa}</span> <span class="text-slate-300 font-normal">vs</span> <span>${jogo.fora}</span>
+                        </td>
+                        <td class="py-3 px-2 text-center">
+                            <span class="bg-slate-100 px-2 py-1 rounded font-black text-slate-700">${placarSugerido}</span>
+                        </td>
+                        <td class="py-3 px-2 text-center">
+                            <span class="${classesStatus} text-[10px] px-2 py-0.5 rounded-full font-bold">${jogo.status}</span>
+                        </td>
+                        <td class="py-3 px-2 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="abrirModalEditarPartida(${jogo.id})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-2 py-1.5 rounded text-[10px] uppercase tracking-wide transition shadow-sm" title="Editar Jogo">
+                                    <i class="fa-solid fa-pen text-[9px]"></i>
+                                </button>
+                                <button onclick="excluirJogoFila(${jogo.id})" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-1.5 rounded text-[10px] uppercase tracking-wide transition shadow-sm" title="Excluir Jogo">
+                                    <i class="fa-solid fa-trash text-[9px]"></i>
+                                </button>
+                                <button onclick="abrirModalSumula('${jogo.casa}', '${jogo.fora}', '${jogo.pontosCasa || ''}', '${jogo.pontosFora || ''}', ${jogo.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded text-[10px] uppercase tracking-wide transition shadow-sm">
+                                    ${jogo.status === 'Aguardando RevisÃ£o' ? 'Publicar' : 'LanÃ§ar SÃºmula'}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ==========================================
+        // EDITAR PARTIDA (FILA DE PUBLICACAO)
+        // ==========================================
+
+        async function abrirModalEditarPartida(jogoId) {
+            const jogos = await carregarJogos();
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return;
+
+            document.getElementById('editPartidaId').value = jogoId;
+            document.getElementById('editSelectMandante').value = jogo.casa;
+            document.getElementById('editSelectVisitante').value = jogo.fora;
+            document.getElementById('editPartidaData').value = jogo.data;
+            document.getElementById('editPartidaHora').value = jogo.hora;
+            document.getElementById('editPartidaRodada').value = jogo.rodada || '';
+            document.getElementById('editPartidaLocal').value = jogo.local || '';
+            document.getElementById('editPartidaPtCasa').value = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined) ? jogo.pontosCasa : '';
+            document.getElementById('editPartidaPtFora').value = (jogo.pontosFora !== null && jogo.pontosFora !== undefined) ? jogo.pontosFora : '';
+            document.getElementById('editPartidaStatus').value = jogo.status || 'Agendado';
+
+            const modal = document.getElementById('modalEditarPartida');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalEditarPartida() {
+            const modal = document.getElementById('modalEditarPartida');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarEdicaoPartida(event) {
+            event.preventDefault();
+            const jogoId = parseInt(document.getElementById('editPartidaId').value);
+            const mandante = document.getElementById('editSelectMandante').value;
+            const visitante = document.getElementById('editSelectVisitante').value;
+            const data = document.getElementById('editPartidaData').value;
+            const hora = document.getElementById('editPartidaHora').value;
+            const rodada = document.getElementById('editPartidaRodada').value;
+            const local = document.getElementById('editPartidaLocal').value;
+            const ptCasaRaw = document.getElementById('editPartidaPtCasa').value;
+            const ptForaRaw = document.getElementById('editPartidaPtFora').value;
+            const status = document.getElementById('editPartidaStatus').value;
+
+            if (mandante === visitante) {
+                alert("O time mandante e o visitante nÃ£o podem ser o mesmo!");
+                return;
+            }
+
+            try {
+                await atualizarJogo(jogoId, {
+                    casa: mandante,
+                    fora: visitante,
+                    data: data,
+                    hora: hora,
+                    rodada: rodada,
+                    local: local,
+                    pontosCasa: ptCasaRaw !== '' ? parseInt(ptCasaRaw) : null,
+                    pontosFora: ptForaRaw !== '' ? parseInt(ptForaRaw) : null,
+                    status: status
+                });
+                alert(`Partida atualizada com sucesso!\n\n${mandante} vs ${visitante}`);
+                fecharModalEditarPartida();
+                location.reload();
+            } catch(e) {
+                alert('Erro ao atualizar partida: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // EXCLUIR JOGO DA FILA DE PUBLICACAO
+        // ==========================================
+
+        async function excluirJogoFila(jogoId) {
+            const jogos = await carregarJogos();
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return;
+
+            if (!confirm(`Deseja excluir o jogo?\n\n${jogo.casa} vs ${jogo.fora}\n${jogo.data} Ã s ${jogo.hora}\n\nEsta aÃ§Ã£o nÃ£o pode ser desfeita.`)) return;
+
+            try {
+                await excluirJogo(jogoId);
+                alert('Jogo excluÃ­do com sucesso!');
+                location.reload();
+            } catch(e) {
+                alert('Erro ao excluir jogo: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // MENU LATERAL â€” SCROLL + DESTAQUE ATIVO
+        // ==========================================
+
+        function rolarParaSecao(id) {
+            event.preventDefault();
+            const alvo = document.getElementById(id);
+            if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            document.querySelectorAll('.menu-lateral').forEach(item => {
+                item.classList.remove('bg-admin-hover', 'text-white');
+                item.classList.add('text-emerald-100/70');
+            });
+            event.currentTarget.classList.add('bg-admin-hover', 'text-white');
+            event.currentTarget.classList.remove('text-emerald-100/70');
+        }
+
+        let jogoSendoEditadoId = null;
+
+        async function abrirModalSumula(timeCasa, timeFora, pontosC = '', pontosF = '', jogoId = null) {
+            jogoSendoEditadoId = jogoId;
+            const modal = document.getElementById('modalSumula');
+            document.getElementById('labelTimeCasa').innerText = timeCasa;
+            document.getElementById('labelTimeFora').innerText = timeFora;
+            document.getElementById('pontosCasa').value = pontosC;
+            document.getElementById('pontosFora').value = pontosF;
+
+            // Busca jogos e atletas do Supabase
+            const jogos = await carregarJogos();
+            const jogoAtual = jogoId ? jogos.find(j => j.id === jogoId) : null;
+            const ptsAtletasCasa = (jogoAtual && jogoAtual.pontosAtletasCasa) ? jogoAtual.pontosAtletasCasa : [];
+            const ptsAtletasFora = (jogoAtual && jogoAtual.pontosAtletasFora) ? jogoAtual.pontosAtletasFora : [];
+
+            const atletasStorage = await carregarAtletasPorEquipe();
+
+            function getAtletas(time) {
+                return atletasStorage[time] || [];
+            }
+
+            const containerCasa = document.getElementById('listaAtletasCasa');
+            containerCasa.innerHTML = '';
+            const atletasCasa = getAtletas(timeCasa);
+            if (atletasCasa.length === 0) {
+                containerCasa.innerHTML = `<p class="text-[10px] text-slate-400 text-center py-3"><i class="fa-solid fa-circle-exclamation mr-1"></i>Nenhum atleta cadastrado para ${timeCasa}</p>`;
+            } else {
+                atletasCasa.forEach(atleta => {
+                    const ptsSalvos = ptsAtletasCasa.find(p => p.id === atleta.id);
+                    const valorAtual = ptsSalvos ? ptsSalvos.pontosNovos : '';
+                    containerCasa.innerHTML += `
+                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200/50">
+                            <div class="truncate">
+                                <p class="text-2xl font-black text-red-600 leading-tight">${atleta.camisa || '?'}</p>
+                                <p class="text-[10px] font-bold text-slate-600 uppercase">${atleta.nome.split(' ')[0]}</p>
+                            </div>
+                            <input type="number" min="0" data-atleta-id="${atleta.id}" data-atleta-nome="${atleta.nome}" data-atleta-classe="${atleta.classe}" value="${valorAtual}" class="pontos-atleta-casa w-12 text-center bg-white border border-slate-300 rounded py-1 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500" placeholder="0">
+                        </div>
+                    `;
+                });
+            }
+
+            const containerFora = document.getElementById('listaAtletasFora');
+            containerFora.innerHTML = '';
+            const atletasFora = getAtletas(timeFora);
+            if (atletasFora.length === 0) {
+                containerFora.innerHTML = `<p class="text-[10px] text-slate-400 text-center py-3"><i class="fa-solid fa-circle-exclamation mr-1"></i>Nenhum atleta cadastrado para ${timeFora}</p>`;
+            } else {
+                atletasFora.forEach(atleta => {
+                    const ptsSalvos = ptsAtletasFora.find(p => p.id === atleta.id);
+                    const valorAtual = ptsSalvos ? ptsSalvos.pontosNovos : '';
+                    containerFora.innerHTML += `
+                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200/50">
+                            <div class="truncate">
+                                <p class="text-2xl font-black text-red-600 leading-tight">${atleta.camisa || '?'}</p>
+                                <p class="text-[10px] font-bold text-slate-600 uppercase">${atleta.nome.split(' ')[0]}</p>
+                            </div>
+                            <input type="number" min="0" data-atleta-id="${atleta.id}" data-atleta-nome="${atleta.nome}" data-atleta-classe="${atleta.classe}" value="${valorAtual}" class="pontos-atleta-fora w-12 text-center bg-white border border-slate-300 rounded py-1 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500" placeholder="0">
+                        </div>
+                    `;
+                });
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalSumula() {
+            const modal = document.getElementById('modalSumula');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarSumula(event) {
+            event.preventDefault();
+            const casa = document.getElementById('labelTimeCasa').innerText;
+            const fora = document.getElementById('labelTimeFora').innerText;
+            const ptCasa = parseInt(document.getElementById('pontosCasa').value) || 0;
+            const ptFora = parseInt(document.getElementById('pontosFora').value) || 0;
+
+            let somaAtletasCasa = 0;
+            const dadosAtletasCasa = [];
+            document.querySelectorAll('.pontos-atleta-casa').forEach(input => {
+                const pts = parseInt(input.value) || 0;
+                somaAtletasCasa += pts;
+                if (pts > 0) {
+                    dadosAtletasCasa.push({
+                        id: parseInt(input.dataset.atletaId),
+                        nome: input.dataset.atletaNome,
+                        classe: input.dataset.atletaClasse,
+                        time: casa,
+                        pontosNovos: pts
+                    });
+                }
+            });
+
+            let somaAtletasFora = 0;
+            const dadosAtletasFora = [];
+            document.querySelectorAll('.pontos-atleta-fora').forEach(input => {
+                const pts = parseInt(input.value) || 0;
+                somaAtletasFora += pts;
+                if (pts > 0) {
+                    dadosAtletasFora.push({
+                        id: parseInt(input.dataset.atletaId),
+                        nome: input.dataset.atletaNome,
+                        classe: input.dataset.atletaClasse,
+                        time: fora,
+                        pontosNovos: pts
+                    });
+                }
+            });
+
+            if (somaAtletasCasa > 0 && somaAtletasCasa !== ptCasa) {
+                alert(`Erro!\nA soma do ${casa} (${somaAtletasCasa} pts) nÃ£o bate com o placar (${ptCasa} pts).`);
+                return;
+            }
+            if (somaAtletasFora > 0 && somaAtletasFora !== ptFora) {
+                alert(`Erro!\nA soma do ${fora} (${somaAtletasFora} pts) nÃ£o bate com o placar (${ptFora} pts).`);
+                return;
+            }
+
+            // Carrega jogos do Supabase
+            let jogos = await carregarJogos();
+            let jogoIndex = -1;
+            let dadosAntigosCasa = [];
+            let dadosAntigosFora = [];
+            let jogoDataAntiga = '';
+            let ptCasaAntigo = 0;
+            let ptForaAntigo = 0;
+            if (jogoSendoEditadoId) {
+                jogoIndex = jogos.findIndex(j => j.id === jogoSendoEditadoId);
+                if (jogoIndex !== -1) {
+                    dadosAntigosCasa = jogos[jogoIndex].pontosAtletasCasa || [];
+                    dadosAntigosFora = jogos[jogoIndex].pontosAtletasFora || [];
+                    jogoDataAntiga = jogos[jogoIndex].data;
+                    ptCasaAntigo = jogos[jogoIndex].pontosCasa || 0;
+                    ptForaAntigo = jogos[jogoIndex].pontosFora || 0;
+
+                    await atualizarJogo(jogoSendoEditadoId, {
+                        pontosCasa: ptCasa,
+                        pontosFora: ptFora,
+                        status: "Publicado",
+                        pontosAtletasCasa: dadosAtletasCasa,
+                        pontosAtletasFora: dadosAtletasFora
+                    });
+                }
+            }
+
+            // Atualiza classificacao via Supabase
+            let classificacao = await carregarClassificacao();
+            const indexCasa = classificacao.findIndex(t => t.time === casa);
+            const indexFora = classificacao.findIndex(t => t.time === fora);
+
+            if (indexCasa !== -1 && indexFora !== -1) {
+                if (jogoSendoEditadoId && jogoIndex !== -1 && (ptCasaAntigo > 0 || ptForaAntigo > 0)) {
+                    classificacao[indexCasa].ptsPro -= ptCasaAntigo;
+                    classificacao[indexCasa].ptsContra -= ptForaAntigo;
+                    classificacao[indexFora].ptsPro -= ptForaAntigo;
+                    classificacao[indexFora].ptsContra -= ptCasaAntigo;
+                    if (ptCasaAntigo > ptForaAntigo) {
+                        classificacao[indexCasa].v -= 1;
+                        classificacao[indexFora].d -= 1;
+                    } else if (ptForaAntigo > ptCasaAntigo) {
+                        classificacao[indexFora].v -= 1;
+                        classificacao[indexCasa].d -= 1;
+                    }
+                }
+
+                classificacao[indexCasa].ptsPro += ptCasa;
+                classificacao[indexCasa].ptsContra += ptFora;
+                classificacao[indexFora].ptsPro += ptFora;
+                classificacao[indexFora].ptsContra += ptCasa;
+
+                if (ptCasa > ptFora) {
+                    classificacao[indexCasa].v += 1;
+                    classificacao[indexFora].d += 1;
+                } else if (ptFora > ptCasa) {
+                    classificacao[indexFora].v += 1;
+                    classificacao[indexCasa].d += 1;
+                }
+
+                classificacao[indexCasa].pts = classificacao[indexCasa].v * 2 + classificacao[indexCasa].d * 1;
+                classificacao[indexFora].pts = classificacao[indexFora].v * 2 + classificacao[indexFora].d * 1;
+                
+                classificacao.sort((a, b) => {
+                    const ptsA = a.pts ?? (a.v * 2 + a.d * 1);
+                    const ptsB = b.pts ?? (b.v * 2 + b.d * 1);
+                    if (ptsB !== ptsA) return ptsB - ptsA;
+                    return (b.ptsPro - b.ptsContra) - (a.ptsPro - a.ptsContra);
+                });
+                await salvarClassificacao(classificacao);
+            }
+
+            // Atualiza artilharia via Supabase
+            let artilharia = await carregarArtilharia();
+            const todosNovosPontos = [...dadosAtletasCasa, ...dadosAtletasFora];
+            const idsParaExcluir = [];
+
+            if (jogoSendoEditadoId && jogoIndex !== -1 && (dadosAntigosCasa.length > 0 || dadosAntigosFora.length > 0)) {
+                [...dadosAntigosCasa, ...dadosAntigosFora].forEach(antigo => {
+                    const jogador = artilharia.find(j => j.id === antigo.id);
+                    if (jogador) {
+                        jogador.pontos -= antigo.pontosNovos;
+                        if (jogador.jogos) {
+                            jogador.jogos = jogador.jogos.filter(j => j.jogoId !== jogoSendoEditadoId);
+                        }
+                    }
+                });
+                artilharia.filter(j => j.pontos <= 0).forEach(j => idsParaExcluir.push(j.id));
+                artilharia = artilharia.filter(j => j.pontos > 0);
+            }
+
+            const jogoDataAtual = jogoIndex !== -1 ? jogos[jogoIndex].data : '';
+
+            todosNovosPontos.forEach(novo => {
+                const jogadorExistente = artilharia.find(j => j.id === novo.id);
+                if (jogadorExistente) {
+                    jogadorExistente.pontos += novo.pontosNovos;
+                    jogadorExistente.jogos = jogadorExistente.jogos || [];
+                    jogadorExistente.jogos.push({ jogoId: jogoSendoEditadoId, adversario: novo.time === casa ? fora : casa, data: jogoDataAtual, pontos: novo.pontosNovos });
+                } else {
+                    artilharia.push({
+                        id: novo.id,
+                        nome: novo.nome,
+                        time: novo.time,
+                        classe: novo.classe,
+                        pontos: novo.pontosNovos,
+                        jogos: [{ jogoId: jogoSendoEditadoId, adversario: novo.time === casa ? fora : casa, data: jogoDataAtual, pontos: novo.pontosNovos }]
+                    });
+                }
+            });
+
+            // Salva artilharia no Supabase
+            for (const item of artilharia) {
+                await salvarArtilhariaItem(item);
+            }
+            for (const id of idsParaExcluir) {
+                await excluirArtilhariaItem(id);
+            }
+
+            alert(`SÃºmula enviada com sucesso!\nO Portal PÃºblico foi atualizado.`);
+            fecharModalSumula();
+            location.reload();
+        }
+
+        // ==========================================
+        // MODAL SELECIONAR JOGO PARA SUMULA
+        // ==========================================
+
+        function abrirModalSelecionarJogo() {
+            const modal = document.getElementById('modalSelecionarJogo');
+            document.getElementById('filtroStatusJogo').value = '';
+            document.getElementById('filtroEquipeJogo').value = '';
+            renderizarListaJogosSelecao();
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalSelecionarJogo() {
+            const modal = document.getElementById('modalSelecionarJogo');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function renderizarListaJogosSelecao() {
+            const jogos = await carregarJogos();
+            const filtroStatus = document.getElementById('filtroStatusJogo').value;
+            const filtroEquipe = document.getElementById('filtroEquipeJogo').value.trim().toUpperCase();
+            const container = document.getElementById('listaJogosSelecao');
+            container.innerHTML = '';
+
+            let jogosFiltrados = jogos;
+            if (filtroStatus) {
+                jogosFiltrados = jogosFiltrados.filter(j => j.status === filtroStatus);
+            }
+            if (filtroEquipe) {
+                jogosFiltrados = jogosFiltrados.filter(j =>
+                    j.casa.toUpperCase().includes(filtroEquipe) ||
+                    j.fora.toUpperCase().includes(filtroEquipe)
+                );
+            }
+
+            if (jogosFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-slate-400">
+                        <i class="fa-solid fa-calendar-xmark text-3xl block mb-2"></i>
+                        <p class="text-xs font-semibold">Nenhum jogo encontrado com esses filtros.</p>
+                    </div>`;
+                return;
+            }
+
+            jogosFiltrados.forEach(jogo => {
+                const placar = (jogo.pontosCasa !== null && jogo.pontosFora !== null)
+                    ? `${jogo.pontosCasa} Ã— ${jogo.pontosFora}`
+                    : '-- Ã— --';
+
+                let badgeColor = 'bg-blue-100 text-blue-800';
+                let icone = 'fa-circle-dot text-blue-500';
+                if (jogo.status === 'Aguardando RevisÃ£o') { badgeColor = 'bg-amber-100 text-amber-800'; icone = 'fa-clock text-amber-500'; }
+                if (jogo.status === 'Publicado') { badgeColor = 'bg-emerald-100 text-emerald-800'; icone = 'fa-circle-check text-emerald-500'; }
+
+                container.innerHTML += `
+                    <button onclick="selecionarJogoParaSumula(${jogo.id})"
+                        class="w-full text-left bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-400 rounded-xl p-4 transition group flex items-center gap-4">
+                        <div class="shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid ${icone} text-base"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="text-xs font-extrabold text-slate-800">
+                                    ${jogo.casa} <span class="text-slate-400 font-normal">vs</span> ${jogo.fora}
+                                </p>
+                                <span class="${badgeColor} text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">${jogo.status}</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-0.5">
+                                <i class="fa-regular fa-calendar mr-1"></i>${jogo.data} Ã s ${jogo.hora}
+                                &nbsp;|&nbsp;
+                                <i class="fa-solid fa-basketball mr-1"></i>Placar: <strong class="text-slate-600">${placar}</strong>
+                            </p>
+                        </div>
+                        <div class="shrink-0 text-slate-300 group-hover:text-amber-500 transition">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                        </div>
+                    </button>
+                `;
+            });
+        }
+
+        async function selecionarJogoParaSumula(jogoId) {
+            const jogos = await carregarJogos();
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return;
+            fecharModalSelecionarJogo();
+            setTimeout(() => {
+                abrirModalSumula(
+                    jogo.casa,
+                    jogo.fora,
+                    jogo.pontosCasa !== null ? jogo.pontosCasa : '',
+                    jogo.pontosFora !== null ? jogo.pontosFora : '',
+                    jogo.id
+                );
+            }, 320);
+        }
+
+        function abrirModalPartida() {
+            const modal = document.getElementById('modalPartida');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalPartida() {
+            const modal = document.getElementById('modalPartida');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarPartida(event) {
+            event.preventDefault();
+            const mandante = document.getElementById('selectMandante').value;
+            const visitante = document.getElementById('selectVisitante').value;
+            const dataRaw = document.getElementById('partidaData').value;
+            const hora = document.getElementById('partidaHora').value;
+            const rodada = document.getElementById('partidaRodada').value;
+            const local = document.getElementById('partidaLocal').value;
+
+            if (mandante === visitante) {
+                alert("Aviso: O time mandante e o visitante nÃ£o podem ser o mesmo!");
+                return;
+            }
+
+            const dataObj = new Date(dataRaw + 'T00:00:00');
+            const dataFormatada = `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}`;
+
+            try {
+                await salvarJogo({
+                    data: dataFormatada,
+                    hora: hora,
+                    casa: mandante,
+                    fora: visitante,
+                    rodada: rodada,
+                    local: local,
+                    pontosCasa: null,
+                    pontosFora: null,
+                    status: "Em Andamento"
+                });
+                alert(`Partida Agendada!\n\nRodada ${rodada}: ${mandante} vs ${visitante}`);
+                fecharModalPartida();
+                location.reload();
+            } catch(e) {
+                alert('Erro ao agendar partida: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // FUNCOES DO MODAL DE ATLETA (GERENCIAR)
+        // ==========================================
+
+        async function popularSelectsEquipes() {
+            const equipesData = await carregarEquipes();
+            const equipes = equipesData.map(e => e.nome);
+
+            const selAdd = document.getElementById('atletaEquipe');
+            selAdd.innerHTML = '<option value="">Selecione a equipe...</option>';
+            equipes.forEach(eq => {
+                selAdd.innerHTML += `<option value="${eq}">${eq}</option>`;
+            });
+
+            const selFiltro = document.getElementById('filtroEquipeAtletas');
+            selFiltro.innerHTML = '<option value="">Todas as Equipes</option>';
+            equipes.forEach(eq => {
+                selFiltro.innerHTML += `<option value="${eq}">${eq}</option>`;
+            });
+
+            const selEdit = document.getElementById('editAtletaEquipe');
+            if (selEdit) {
+                selEdit.innerHTML = '';
+                equipes.forEach(eq => {
+                    selEdit.innerHTML += `<option value="${eq}">${eq}</option>`;
+                });
+            }
+        }
+
+        function trocarAbaAtleta(aba) {
+            const painelAdicionar = document.getElementById('painelAdicionar');
+            const painelListar = document.getElementById('painelListar');
+            const abaAdicionar = document.getElementById('abaAdicionar');
+            const abaListar = document.getElementById('abaListar');
+
+            if (aba === 'adicionar') {
+                painelAdicionar.classList.remove('hidden');
+                painelListar.classList.add('hidden');
+                abaAdicionar.classList.add('text-emerald-700', 'border-emerald-600', 'bg-emerald-50');
+                abaAdicionar.classList.remove('text-slate-400', 'border-transparent');
+                abaListar.classList.remove('text-slate-700', 'border-slate-300');
+                abaListar.classList.add('text-slate-400', 'border-transparent');
+            } else {
+                painelAdicionar.classList.add('hidden');
+                painelListar.classList.remove('hidden');
+                abaListar.classList.add('text-slate-700', 'border-slate-300');
+                abaListar.classList.remove('text-slate-400', 'border-transparent');
+                abaAdicionar.classList.remove('text-emerald-700', 'border-emerald-600', 'bg-emerald-50');
+                abaAdicionar.classList.add('text-slate-400', 'border-transparent', 'bg-white');
+                renderizarListaAtletas();
+            }
+        }
+
+        async function renderizarListaAtletas() {
+            const atletasLocais = await carregarAtletasPorEquipe();
+            const filtro = document.getElementById('filtroEquipeAtletas').value;
+            const container = document.getElementById('listaAtletasGerenciar');
+            container.innerHTML = '';
+
+            const equipesFiltradas = filtro ? { [filtro]: atletasLocais[filtro] || [] } : atletasLocais;
+
+            let totalAtletas = 0;
+            Object.entries(equipesFiltradas).forEach(([equipe, atletas]) => {
+                if (!atletas || atletas.length === 0) return;
+                totalAtletas += atletas.length;
+
+                container.innerHTML += `
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-block bg-slate-800 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider">${equipe}</span>
+                            <span class="text-[10px] text-slate-400 font-bold">${atletas.length} atleta(s)</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            ${atletas.map(a => `
+                                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs shrink-0">#${a.camisa || '?'}</div>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-800 leading-tight">${a.nome}</p>
+                                            <p class="text-[9px] text-slate-400 font-bold uppercase">Classe ${a.classe} &bull; ${a.idade ? a.idade + ' anos' : ''}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button onclick="abrirModalEditarAtleta(${a.id}, '${equipe}')"
+                                            class="w-7 h-7 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white flex items-center justify-center transition" title="Editar">
+                                            <i class="fa-solid fa-pen text-[10px]"></i>
+                                        </button>
+                                        <button onclick="excluirAtleta(${a.id}, '${equipe}')"
+                                            class="w-7 h-7 rounded-md bg-red-100 text-red-700 hover:bg-red-600 hover:text-white flex items-center justify-center transition" title="Excluir">
+                                            <i class="fa-solid fa-trash text-[10px]"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (totalAtletas === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-users-slash text-2xl block mb-2"></i>Nenhum atleta encontrado.</div>`;
+            }
+        }
+
+        function abrirModalAtleta() {
+            popularSelectsEquipes();
+            trocarAbaAtleta('adicionar');
+            const modal = document.getElementById('modalAtleta');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalAtleta() {
+            const modal = document.getElementById('modalAtleta');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarAtleta(event) {
+            event.preventDefault();
+            const nome = document.getElementById('atletaNome').value;
+            const camisa = parseInt(document.getElementById('atletaCamisa').value);
+            const idade = parseInt(document.getElementById('atletaIdade').value);
+            const classe = document.getElementById('atletaClasse').value;
+            const equipe = document.getElementById('atletaEquipe').value;
+
+            try {
+                await _dbSalvarAtleta({ nome, classe, camisa, idade }, equipe);
+                alert(`Sucesso!\n\nAtleta ${nome} (#${camisa}) cadastrado com sucesso no ${equipe}!`);
+
+                document.getElementById('atletaNome').value = '';
+                document.getElementById('atletaCamisa').value = '';
+                document.getElementById('atletaIdade').value = '';
+                document.getElementById('atletaClasse').value = '';
+                document.getElementById('atletaEquipe').value = '';
+
+                popularSelectsEquipes();
+                renderizarListaAtletas();
+            } catch(e) {
+                alert('Erro ao salvar atleta: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // EDITAR ATLETA
+        // ==========================================
+
+        async function abrirModalEditarAtleta(atletaId, equipe) {
+            const atletasLocais = await carregarAtletasPorEquipe();
+            const atleta = (atletasLocais[equipe] || []).find(a => a.id === atletaId);
+            if (!atleta) return;
+
+            await popularSelectsEquipes();
+
+            document.getElementById('editAtletaId').value = atletaId;
+            document.getElementById('editAtletaEquipeOriginal').value = equipe;
+            document.getElementById('editAtletaNome').value = atleta.nome;
+            document.getElementById('editAtletaCamisa').value = atleta.camisa;
+            document.getElementById('editAtletaIdade').value = atleta.idade;
+            document.getElementById('editAtletaClasse').value = atleta.classe;
+            document.getElementById('editAtletaEquipe').value = equipe;
+
+            const modal = document.getElementById('modalEditarAtleta');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalEditarAtleta() {
+            const modal = document.getElementById('modalEditarAtleta');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarEdicaoAtleta(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('editAtletaId').value);
+            const novaEquipe = document.getElementById('editAtletaEquipe').value;
+            const nome = document.getElementById('editAtletaNome').value;
+            const camisa = parseInt(document.getElementById('editAtletaCamisa').value);
+            const idade = parseInt(document.getElementById('editAtletaIdade').value);
+            const classe = document.getElementById('editAtletaClasse').value;
+
+            try {
+                await _dbAtualizarAtleta(id, { nome, classe, camisa, idade }, novaEquipe);
+                fecharModalEditarAtleta();
+                renderizarListaAtletas();
+                popularSelectsEquipes();
+            } catch(e) {
+                alert('Erro ao atualizar atleta: ' + e.message);
+            }
+        }
+
+        async function excluirAtleta(atletaId, equipe) {
+            if (!confirm(`Tem certeza que deseja excluir este atleta da equipe ${equipe}?`)) return;
+
+            try {
+                await _dbExcluirAtleta(atletaId);
+                renderizarListaAtletas();
+                popularSelectsEquipes();
+            } catch(e) {
+                alert('Erro ao excluir atleta: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // FUNCOES DO MODAL DE EQUIPES (GERENCIAR)
+        // ==========================================
+
+        function trocarAbaEquipe(aba) {
+            const painelNova = document.getElementById('painelNovaEquipe');
+            const painelListar = document.getElementById('painelListarEquipes');
+            const abaNova = document.getElementById('abaNovaEquipe');
+            const abaListar = document.getElementById('abaListarEquipes');
+
+            if (aba === 'nova') {
+                painelNova.classList.remove('hidden');
+                painelListar.classList.add('hidden');
+                abaNova.classList.add('text-blue-700', 'border-blue-600', 'bg-blue-50');
+                abaNova.classList.remove('text-slate-400', 'border-transparent', 'bg-white');
+                abaListar.classList.remove('text-slate-700', 'border-slate-300');
+                abaListar.classList.add('text-slate-400', 'border-transparent');
+            } else {
+                painelNova.classList.add('hidden');
+                painelListar.classList.remove('hidden');
+                abaListar.classList.add('text-slate-700', 'border-slate-300');
+                abaListar.classList.remove('text-slate-400', 'border-transparent');
+                abaNova.classList.remove('text-blue-700', 'border-blue-600', 'bg-blue-50');
+                abaNova.classList.add('text-slate-400', 'border-transparent', 'bg-white');
+                renderizarListaEquipes();
+            }
+        }
+
+        async function renderizarListaEquipes() {
+            const atletasLocais = await carregarAtletasPorEquipe();
+            const classificacao = await carregarClassificacao();
+            const container = document.getElementById('listaEquipesGerenciar');
+            container.innerHTML = '';
+
+            const equipes = Object.keys(atletasLocais);
+            if (equipes.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-shield-halved text-2xl block mb-2"></i>Nenhuma equipe cadastrada.</div>`;
+                return;
+            }
+
+            equipes.forEach(nome => {
+                const atletas = atletasLocais[nome] || [];
+                const cl = classificacao.find(t => t.time === nome);
+                const cidade = cl ? cl.cidade : 'â€”';
+                const vitorias = cl ? cl.v : 0;
+                const derrotas = cl ? cl.d : 0;
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0 overflow-hidden">
+                            ${cl && cl.logo ? `<img src="${cl.logo}" alt="${nome}" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-shield-halved text-sm\\'></i>'">` : '<i class="fa-solid fa-shield-halved text-sm"></i>'}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-extrabold text-slate-800 leading-tight">${nome}</p>
+                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">
+                                <i class="fa-solid fa-location-dot mr-1"></i>${cidade}
+                                &nbsp;&bull;&nbsp;
+                                <i class="fa-solid fa-users mr-1"></i>${atletas.length} atleta(s)
+                                &nbsp;&bull;&nbsp;
+                                <span class="text-emerald-600 font-bold">${vitorias}V</span> / <span class="text-red-500 font-bold">${derrotas}D</span>
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="abrirModalEditarEquipe('${nome}')"
+                                class="w-7 h-7 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white flex items-center justify-center transition" title="Editar equipe">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                            <button onclick="excluirEquipe('${nome}')"
+                                class="w-7 h-7 rounded-md bg-red-100 text-red-700 hover:bg-red-600 hover:text-white flex items-center justify-center transition" title="Excluir equipe">
+                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function abrirModalEquipe() {
+            trocarAbaEquipe('nova');
+            const modal = document.getElementById('modalEquipe');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalEquipe() {
+            const modal = document.getElementById('modalEquipe');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarEquipe(event) {
+            event.preventDefault();
+            const nome = document.getElementById('equipeNome').value.trim().toUpperCase();
+            const cidade = document.getElementById('equipeCidade').value.trim();
+            const estado = document.getElementById('equipeEstado').value.trim().toUpperCase() || 'SC';
+
+            if (!nome || !cidade) {
+                alert('Preencha o nome da equipe e a cidade!');
+                return;
+            }
+
+            const equipesExistentes = await carregarEquipes();
+            if (equipesExistentes.find(e => e.nome === nome)) {
+                alert(`A equipe "${nome}" jÃ¡ existe no sistema!`);
+                return;
+            }
+
+            let logo = document.getElementById('equipeLogo').value.trim();
+            if (logo && !logo.startsWith('logos/')) logo = 'logos/' + logo;
+
+            const nomeCompleto = document.getElementById('equipeNomeCompleto').value.trim();
+
+            try {
+                await adicionarEquipe({ nome, nomeCompleto, cidade, estado, logo });
+                alert(`Equipe "${nome}" de ${cidade}/${estado} cadastrada com sucesso!`);
+
+                document.getElementById('equipeNome').value = '';
+                document.getElementById('equipeNomeCompleto').value = '';
+                document.getElementById('equipeCidade').value = '';
+                document.getElementById('equipeEstado').value = 'SC';
+                document.getElementById('equipeLogo').value = '';
+
+                trocarAbaEquipe('listar');
+                popularSelectsEquipes();
+            } catch(e) {
+                alert('Erro ao cadastrar equipe: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // EDITAR EQUIPE
+        // ==========================================
+
+        async function abrirModalEditarEquipe(nomeOriginal) {
+            const classificacao = await carregarClassificacao();
+            const cl = classificacao.find(t => t.time === nomeOriginal);
+
+            const equipesData = await carregarEquipes();
+            const eq = equipesData.find(e => e.nome === nomeOriginal);
+
+            document.getElementById('editEquipeNomeOriginal').value = nomeOriginal;
+            document.getElementById('editEquipeNome').value = nomeOriginal;
+            document.getElementById('editEquipeNomeCompleto').value = eq ? (eq.nome_completo || '') : '';
+            document.getElementById('editEquipeLogo').value = cl && cl.logo ? cl.logo.replace('logos/', '') : '';
+
+            if (cl && cl.cidade) {
+                const partes = cl.cidade.split(' - ');
+                document.getElementById('editEquipeCidade').value = partes[0] || '';
+                document.getElementById('editEquipeEstado').value = partes[1] || 'SC';
+            } else {
+                document.getElementById('editEquipeCidade').value = '';
+                document.getElementById('editEquipeEstado').value = 'SC';
+            }
+
+            const modal = document.getElementById('modalEditarEquipe');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalEditarEquipe() {
+            const modal = document.getElementById('modalEditarEquipe');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function salvarEdicaoEquipe(event) {
+            event.preventDefault();
+            const nomeOriginal = document.getElementById('editEquipeNomeOriginal').value;
+            const novoNome = document.getElementById('editEquipeNome').value.trim().toUpperCase();
+            const cidade = document.getElementById('editEquipeCidade').value.trim();
+            const estado = document.getElementById('editEquipeEstado').value.trim().toUpperCase() || 'SC';
+            const nomeCompleto = document.getElementById('editEquipeNomeCompleto').value.trim();
+
+            if (!novoNome) { alert('O nome da equipe Ã© obrigatÃ³rio!'); return; }
+
+            if (novoNome !== nomeOriginal) {
+                const equipesExistentes = await carregarEquipes();
+                if (equipesExistentes.find(e => e.nome === novoNome)) {
+                    alert(`JÃ¡ existe uma equipe com o nome "${novoNome}"!`);
+                    return;
+                }
+            }
+
+            let logo = document.getElementById('editEquipeLogo').value.trim();
+            if (logo && !logo.startsWith('logos/')) logo = 'logos/' + logo;
+
+            try {
+                await _dbExcluirEquipe(nomeOriginal);
+                await adicionarEquipe({ nome: novoNome, nomeCompleto, cidade, estado, logo });
+
+                // Recriar classificacao com dados existentes
+                const classificacao = await carregarClassificacao();
+                const cl = classificacao.find(t => t.time === novoNome);
+                if (cl) {
+                    cl.cidade = `${cidade} - ${estado}`;
+                    if (logo) cl.logo = logo;
+                    await salvarClassificacao(classificacao);
+                }
+
+                fecharModalEditarEquipe();
+                renderizarListaEquipes();
+                popularSelectsEquipes();
+            } catch(e) {
+                alert('Erro ao editar equipe: ' + e.message);
+            }
+        }
+
+        async function excluirEquipe(nome) {
+            const atletasLocais = await carregarAtletasPorEquipe();
+            const numAtletas = (atletasLocais[nome] || []).length;
+            const aviso = numAtletas > 0
+                ? `\n\nâš ï¸ Esta equipe possui ${numAtletas} atleta(s) que tambÃ©m serÃ£o removidos!`
+                : '';
+
+            if (!confirm(`Deseja excluir permanentemente a equipe "${nome}"?${aviso}`)) return;
+
+            try {
+                await _dbExcluirEquipe(nome);
+                renderizarListaEquipes();
+                popularSelectsEquipes();
+            } catch(e) {
+                alert('Erro ao excluir equipe: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // CADASTRO DE PROFISSIONAIS
+        // ==========================================
+
+        function abrirModalProfissional() {
+            limparFormProfissional();
+            trocarAbaProfissional('cadastrar');
+            const modal = document.getElementById('modalProfissional');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalProfissional() {
+            const modal = document.getElementById('modalProfissional');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function trocarAbaProfissional(aba) {
+            const painelCadastrar = document.getElementById('painelCadastrarProf');
+            const painelListar = document.getElementById('painelListarProf');
+            const painelImportar = document.getElementById('painelImportarProf');
+            const abaCadastrar = document.getElementById('abaCadastrarProf');
+            const abaListar = document.getElementById('abaListarProf');
+            const abaImportar = document.getElementById('abaImportarProf');
+
+            const todosPaineis = [painelCadastrar, painelListar, painelImportar];
+            const todasAbas = [
+                { el: abaCadastrar, ativa: aba === 'cadastrar' },
+                { el: abaListar, ativa: aba === 'listar' },
+                { el: abaImportar, ativa: aba === 'importar' }
+            ];
+
+            todosPaineis.forEach(p => { p.classList.add('hidden'); });
+            todasAbas.forEach(a => {
+                if (a.ativa) {
+                    a.el.classList.add('text-indigo-700', 'border-indigo-600', 'bg-indigo-50');
+                    a.el.classList.remove('text-slate-400', 'border-transparent');
+                } else {
+                    a.el.classList.remove('text-indigo-700', 'border-indigo-600', 'bg-indigo-50', 'text-slate-700', 'border-slate-300');
+                    a.el.classList.add('text-slate-400', 'border-transparent');
+                }
+            });
+
+            if (aba === 'cadastrar') painelCadastrar.classList.remove('hidden');
+            else if (aba === 'listar') { painelListar.classList.remove('hidden'); renderizarListaProfissionais(); }
+            else if (aba === 'importar') painelImportar.classList.remove('hidden');
+        }
+
+        function limparFormProfissional() {
+            document.getElementById('profissionalEditId').value = '';
+            document.getElementById('profissionalNome').value = '';
+            document.getElementById('profissionalFuncao').value = '';
+            document.getElementById('profissionalCategoria').value = '';
+            document.getElementById('profissionalCidade').value = '';
+        }
+
+        async function importarProfissionais() {
+            const texto = document.getElementById('textoImportarProf').value.trim();
+            if (!texto) { alert('Cole a lista de profissionais na caixa de texto!'); return; }
+
+            const funcoesValidas = { 'arbitro (a)': 'Arbitro (A)', 'mesario (a)': 'Mesario (A)', 'classificador (a)': 'Classificador (A)' };
+            const categoriasValidas = { 'internacional': 'Internacional', 'nacional': 'Nacional', 'estadual': 'Estadual', 'novato': 'Novato' };
+
+            const existentes = await carregarProfissionais();
+            const existentesSet = new Set(existentes.map(p => p.nome.toLowerCase().trim()));
+            let adicionados = 0, duplicados = 0, erros = 0;
+            let errosLista = [];
+            let novosProfissionais = [];
+
+            const linhas = texto.split('\n').filter(l => l.trim() !== '');
+            linhas.forEach(function(linha, idx) {
+                let partes = linha.split('|').map(p => p.trim());
+                if (partes.length < 2) partes = linha.split('\t').map(p => p.trim());
+
+                let nome, funcao, categoria, cidade;
+
+                const temNumero = partes.length >= 5 || (partes.length >= 4 && /^\d+$/.test(partes[0]));
+                if (temNumero) {
+                    nome = (partes[1] || '').trim();
+                    funcao = partes[2] || '';
+                    categoria = partes[3] || '';
+                    cidade = partes[4] || '';
+                } else if (partes.length >= 4) {
+                    nome = (partes[0] || '').trim();
+                    funcao = partes[1] || '';
+                    categoria = partes[2] || '';
+                    cidade = partes[3] || '';
+                } else if (partes.length === 3) {
+                    nome = (partes[0] || '').trim();
+                    funcao = partes[1] || '';
+                    categoria = partes[2] || '';
+                    cidade = '';
+                } else { erros++; errosLista.push('Linha ' + (idx + 1) + ': formato invalido'); return; }
+
+                if (!nome || funcao === 'â€”' || funcao === '-') { erros++; errosLista.push('Linha ' + (idx + 1) + ': nome vazio ou funcao "--"'); return; }
+
+                const funcaoLower = funcao.toLowerCase();
+                const funcaoNorm = funcoesValidas[funcaoLower];
+                if (!funcaoNorm) { erros++; errosLista.push('Linha ' + (idx + 1) + ': funcao invalida "' + funcao + '"'); return; }
+
+                const catLower = categoria.toLowerCase();
+                const catNorm = categoriasValidas[catLower] || categoria;
+
+                const nomeKey = nome.toLowerCase().trim();
+                if (existentesSet.has(nomeKey)) { duplicados++; return; }
+                existentesSet.add(nomeKey);
+
+                novosProfissionais.push({ nome: nome, funcao: funcaoNorm, categoria: catNorm, cidade: cidade });
+                adicionados++;
+            });
+
+            if (novosProfissionais.length > 0) {
+                try {
+                    await importarProfissionaisBulk(novosProfissionais);
+                } catch(e) {
+                    alert('Erro ao importar: ' + e.message);
+                    return;
+                }
+            }
+
+            renderizarListaProfissionais();
+
+            let msg = 'Importacao concluida! ' + adicionados + ' adicionado(s).';
+            if (duplicados > 0) msg += ' ' + duplicados + ' duplicado(s) pulado(s).';
+            if (erros > 0) msg += ' ' + erros + ' erro(s).';
+            if (errosLista.length > 0) msg += '\n\n' + errosLista.join('\n');
+
+            document.getElementById('resultadoImportacao').textContent = adicionados + ' adicionado(s) | ' + duplicados + ' duplicado(s) | ' + erros + ' erro(s)';
+            alert(msg);
+        }
+
+        async function salvarProfissional(event) {
+            event.preventDefault();
+            const editId = document.getElementById('profissionalEditId').value;
+            const nome = document.getElementById('profissionalNome').value.trim();
+            const funcao = document.getElementById('profissionalFuncao').value;
+            const categoria = document.getElementById('profissionalCategoria').value;
+            const cidade = document.getElementById('profissionalCidade').value.trim();
+
+            if (!nome || !funcao || !categoria || !cidade) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+
+            try {
+                const prof = { nome, funcao, categoria, cidade };
+                if (editId) prof.id = parseInt(editId);
+                await _dbSalvarProfissional(prof);
+                alert(editId ? 'Profissional atualizado com sucesso!' : 'Profissional cadastrado com sucesso!');
+                limparFormProfissional();
+                renderizarListaProfissionais();
+                renderizarEscalaArbitros();
+            } catch(e) {
+                alert('Erro ao salvar profissional: ' + e.message);
+            }
+        }
+
+        async function renderizarListaProfissionais() {
+            const container = document.getElementById('listaProfissionais');
+            if (!container) return;
+
+            let profissionais = await carregarProfissionais();
+            const filtroFuncao = document.getElementById('filtroFuncaoProf') ? document.getElementById('filtroFuncaoProf').value : '';
+            const filtroBusca = document.getElementById('filtroBuscaProf') ? document.getElementById('filtroBuscaProf').value.trim().toLowerCase() : '';
+
+            if (filtroFuncao) profissionais = profissionais.filter(p => p.funcao === filtroFuncao);
+            if (filtroBusca) profissionais = profissionais.filter(p => p.nome.toLowerCase().includes(filtroBusca) || p.cidade.toLowerCase().includes(filtroBusca));
+
+            container.innerHTML = '';
+
+            if (profissionais.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-user-slash text-2xl block mb-2"></i>Nenhum profissional encontrado.</div>';
+                return;
+            }
+
+            const coresFuncao = {
+                'Arbitro (A)': 'bg-emerald-100 text-emerald-800',
+                'Mesario (A)': 'bg-blue-100 text-blue-800',
+                'Classificador (A)': 'bg-amber-100 text-amber-800'
+            };
+
+            const coresCategoria = {
+                'Internacional': 'bg-purple-100 text-purple-800',
+                'Nacional': 'bg-indigo-100 text-indigo-800',
+                'Estadual': 'bg-cyan-100 text-cyan-800',
+                'Novato': 'bg-slate-100 text-slate-600'
+            };
+
+            profissionais.forEach(prof => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center font-black text-xs shrink-0">
+                                <i class="fa-solid fa-user-tie text-[11px]"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-extrabold text-slate-800 leading-tight">${prof.nome}</p>
+                                <p class="text-[9px] font-bold mt-0.5">
+                                    <span class="${coresFuncao[prof.funcao] || 'bg-slate-100 text-slate-600'} px-1.5 py-0.5 rounded">${prof.funcao}</span>
+                                    <span class="${coresCategoria[prof.categoria] || 'bg-slate-100 text-slate-600'} px-1.5 py-0.5 rounded ml-1">${prof.categoria}</span>
+                                </p>
+                                <p class="text-[9px] text-slate-400 font-semibold mt-0.5"><i class="fa-solid fa-location-dot mr-1"></i>${prof.cidade}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="editarProfissional(${prof.id})"
+                                class="w-7 h-7 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white flex items-center justify-center transition" title="Editar">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                            <button onclick="excluirProfissional(${prof.id})"
+                                class="w-7 h-7 rounded-md bg-red-100 text-red-700 hover:bg-red-600 hover:text-white flex items-center justify-center transition" title="Excluir">
+                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function editarProfissional(id) {
+            const profissionais = await carregarProfissionais();
+            const prof = profissionais.find(p => p.id === id);
+            if (!prof) return;
+
+            trocarAbaProfissional('cadastrar');
+
+            document.getElementById('profissionalEditId').value = prof.id;
+            document.getElementById('profissionalNome').value = prof.nome;
+            document.getElementById('profissionalFuncao').value = prof.funcao;
+            document.getElementById('profissionalCategoria').value = prof.categoria;
+            document.getElementById('profissionalCidade').value = prof.cidade;
+        }
+
+        async function excluirProfissional(id) {
+            const profissionais = await carregarProfissionais();
+            const prof = profissionais.find(p => p.id === id);
+            if (!prof) return;
+
+            if (!confirm(`Deseja excluir o profissional?\n\n${prof.nome}\n${prof.funcao} - ${prof.categoria}\n${prof.cidade}`)) return;
+
+            try {
+                await _dbExcluirProfissional(id);
+                alert('Profissional excluido com sucesso!');
+                renderizarListaProfissionais();
+                renderizarEscalaArbitros();
+            } catch(e) {
+                alert('Erro ao excluir profissional: ' + e.message);
+            }
+        }
+
+        async function renderizarEscalaArbitros() {
+            const container = document.getElementById('escalacao-arbitros');
+            if (!container) return;
+
+            const escalas = await carregarEscalas();
+            const jogos = await carregarJogos();
+            const filtroExistente = document.getElementById('filtroDataEscala');
+            const filtroValor = filtroExistente ? filtroExistente.value : '';
+
+            let html = '<div>';
+            html += '<div class="flex justify-between items-center mb-4"><div><h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Escala de Jogos</h3>';
+            html += '<p class="text-[11px] text-slate-400">' + escalas.length + ' escala(s) realizada(s)</p></div>';
+            html += '<button onclick="abrirModalEscalaJogo()" class="text-xs font-bold text-teal-600 hover:text-teal-800 transition">+ Nova Escala</button></div>';
+
+            html += '<div class="mb-3"><input type="text" id="filtroDataEscala" value="' + filtroValor + '" oninput="renderizarEscalaArbitros()" placeholder="Filtrar por data (ex: 18/07)..." class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 transition"></div>';
+
+            if (escalas.length === 0) {
+                html += '<div class="text-center py-6 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-clipboard-list text-2xl block mb-2"></i>Nenhuma escala realizada.<br>Clique em "Escala de Jogo" para comecar.</div>';
+            } else {
+                const filtroData = filtroValor.trim();
+
+                let escalasComJogo = escalas.map(escala => {
+                    const jogo = jogos.find(j => j.id === escala.jogo_id);
+                    return { ...escala, jogo };
+                }).filter(e => e.jogo);
+
+                escalasComJogo.sort((a, b) => {
+                    const [d1, m1] = a.jogo.data.split('/');
+                    const [d2, m2] = b.jogo.data.split('/');
+                    const dataA = new Date(2026, parseInt(m1) - 1, parseInt(d1));
+                    const dataB = new Date(2026, parseInt(m2) - 1, parseInt(d2));
+                    if (dataA - dataB !== 0) return dataA - dataB;
+                    return (a.jogo.hora || '').localeCompare(b.jogo.hora || '');
+                });
+
+                if (filtroData) {
+                    escalasComJogo = escalasComJogo.filter(e => e.jogo.data.includes(filtroData));
+                }
+
+                if (escalasComJogo.length === 0) {
+                    html += '<div class="text-center py-6 text-slate-400 text-xs font-semibold">Nenhuma escala encontrada para "' + filtroData + '"</div>';
+                } else {
+                    const funcoes = [
+                        { chave: 'chefe', label: 'Chefe de Equipe', icone: 'fa-user-tie', cor: 'text-purple-600' },
+                        { chave: 'arbitro1', label: 'Arbitro 1', icone: 'fa-flag', cor: 'text-emerald-600' },
+                        { chave: 'arbitro2', label: 'Arbitro 2', icone: 'fa-flag', cor: 'text-emerald-600' },
+                        { chave: 'apontador', label: 'Apontador', icone: 'fa-pen', cor: 'text-blue-600' },
+                        { chave: 'cronometrista', label: 'Cronometrista', icone: 'fa-clock', cor: 'text-amber-600' },
+                        { chave: 'operador24', label: 'Operador de 24', icone: 'fa-timer', cor: 'text-orange-600' },
+                        { chave: 'classificadora', label: 'Classificadora', icone: 'fa-clipboard-check', cor: 'text-pink-600' }
+                    ];
+
+                    const coresStatus = {
+                        'Agendado': 'bg-blue-100 text-blue-800',
+                        'Em Andamento': 'bg-amber-100 text-amber-800',
+                        'Aguardando Revisao': 'bg-orange-100 text-orange-800',
+                        'Publicado': 'bg-emerald-100 text-emerald-800'
+                    };
+
+                    escalasComJogo.forEach(esc => {
+                        const j = esc.jogo;
+                        const placar = (j.pontosCasa !== null && j.pontosCasa !== undefined && j.pontosCasa !== '') ? j.pontosCasa + ' x ' + j.pontosFora : '-- x --';
+                        const statusClasse = coresStatus[j.status] || 'bg-slate-100 text-slate-600';
+
+                        html += '<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2.5">';
+                        html += '<div class="flex items-center justify-between border-b border-slate-200/60 pb-2 mb-2">';
+                        html += '<div class="flex-1 min-w-0">';
+                        html += '<div class="flex items-center gap-2 flex-wrap">';
+                        html += '<p class="text-[11px] font-extrabold text-slate-800">' + j.casa + ' <span class="text-slate-400 font-normal">vs</span> ' + j.fora + '</p>';
+                        html += '<span class="' + statusClasse + ' text-[9px] font-bold px-2 py-0.5 rounded-full">' + (j.status || 'Agendado') + '</span>';
+                        html += '</div>';
+                        html += '<p class="text-[9px] text-slate-400 font-semibold mt-0.5">';
+                        html += '<i class="fa-regular fa-calendar mr-1"></i>' + j.data + ' as ' + j.hora;
+                        if (j.local) html += ' | <i class="fa-solid fa-location-dot mr-1"></i>' + j.local;
+                        if (j.rodada) html += ' | Rodada ' + j.rodada;
+                        html += ' | Placar: <strong class="text-slate-600">' + placar + '</strong>';
+                        html += '</p></div>';
+
+                        html += '<div class="flex items-center gap-1.5 shrink-0">';
+                        html += '<button onclick="gerarPdfEscala(' + esc.jogo_id + ')" class="w-7 h-7 rounded-md bg-red-100 text-red-700 hover:bg-red-600 hover:text-white flex items-center justify-center transition" title="Salvar PDF"><i class="fa-solid fa-file-pdf text-[10px]"></i></button>';
+                        html += '<button onclick="abrirFormEscala(' + j.id + ')" class="w-7 h-7 rounded-md bg-teal-100 text-teal-700 hover:bg-teal-600 hover:text-white flex items-center justify-center transition" title="Editar escala"><i class="fa-solid fa-pen text-[10px]"></i></button>';
+                        html += '</div></div>';
+
+                        html += '<div class="grid grid-cols-2 gap-x-4 gap-y-1">';
+                        funcoes.forEach(f => {
+                            if (esc[f.chave]) {
+                                html += '<div class="flex items-center gap-1.5 py-0.5">';
+                                html += '<i class="fa-solid ' + f.icone + ' text-[9px] ' + f.cor + '"></i>';
+                                html += '<span class="text-[9px] text-slate-400 font-bold uppercase">' + f.label + ':</span>';
+                                html += '<span class="text-[9px] text-slate-700 font-semibold">' + esc[f.chave] + '</span>';
+                                html += '</div>';
+                            }
+                        });
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                }
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // GERAR PDF DA ESCALA
+        // ==========================================
+        const FCBCR_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACODSURBVHhe7V13WFTX9uW9mPZsz15QUcD2NMbEGDUxientpZrEbuwNRbAg0pUOgoA0QYrSEQG7qAiIFEFQwN57x0IbYIZZv73PzOjAgGJ/f/zW952PuXeas+4+e6+9zz5XLblc/jUNu/8fTzeYwJV4xSguLkbR4SLsTUvDzqQkJCYkIjIyCmFhYVi3bp34GxMdja2bNyN59y5k7NuHs2fOoKysVPkJrw5MoJ3y8UvBvXv3sH9/DiLCI+Hh4QVXVzf4ePsgPDwc27ZuFeQUFhTi1MmTOHv2LM6fO49z9PfkiRM4dPAgUvfswYb1cVgbGgoPd3e4ubrA13sVNiYm4MTxY5DJpMpvejl4KQRKKiqQmZmJ1f6r4eKyAqtXB2D37mScP38elZWVylc9He7TBTly+DA2JiTAy8MDK5ydEUEWy4S/DLxQAm/evIn169fDydEJawLXIDcnF+Vl5cpnXwyuXb0mLHmFq6sYe/emobq6Wvns88cLIfD2rVsIJ9/l5OCAhPgE3CIiXwUOk2X6+fph+XJb7Ny5C/Rblc88PzxXAqurqigAJMDB3k44/PLyxllbeVmZ+MtTuoo+g5FMU3z7tm1I37sXUqlUBA22aLYwRlVV46f+uXPn4OPjC1tbO+QeOKA8+3zw3AgsOHQIjvb2wv+U3L+vPPto5GRnw8LMHDu27xDW4eToiKQdO8Rz9suX4/ix43Cws6fgcEL4OJ6ahvPmCb+ZEB+Pe3fvIWD1akHy3bt3xfsehaKiItjZO2AVkXnnzh3l2WfDMxMok8louq6l6WovIufjwES5r3ATVnGH5Iu7m7uItkxGSFAwHGjaX758GfY2NnChgOBJgaGmpoai7EbsS0+Hl6cn1sfGigu2MTERa0NCsW9vOi5cuCAIvnr1qvKbGsamTZuwlC5cFl3AZ8UzEXj9+jU4E3GRJEGYyIZw+tQprFu7Vvgkth5fki3s4NkK2CqSd+9Gfl4+/H19hTVxwIkl3cdIIMvbm7aXrHQ7tpBbuHHjBiaOH49MkjsB/v7IP5AnLJQ/d9Qff4rvOJifjytXroj3NwR2FzbLlmFdeITyzNPhqQlkC7AwW4rsrEzlmfpxk36w76pV4gexBuQfakfTM4JId3F2wRWyNvZ158ki+XnG7Vu3aUoqHnMEvX79OipICqmm6d7UVJr+++FELuNAbi4FqVvYSVOfA1cqPRcWupam/zFxobZv2w6JRCLeVxdS+mx/klZOLi4kyhV++EnxVATyVDIzXUJT74zyTG2oW+O1a9fguVKR7DBBG+LisHXLFnHMxJSWPn02UXz7thDWRw4fwQGWSBS0pk+bKvzoRbIwvsisP3kGsLvgYFQf4jfEw9zSCsV3ipVnGo8nJjCN0i0rS4sGpQlPH2+vVVjl5fXAothXRdJUWe3nh5ycnGcWz49CHOnOPcnJNDOycP3adZEesnV50EVMpMBz6eJF5StrI4lcxGKTxbjxhJLriQhMJ8uztrQkYjQjHn2OyGl5utbQ41wiKiAgQPkscPToUWFxLwM8ZfmCBZEvzcrIIPI8RLp4gawyk44bwh7Ks01MTVB8t/ERutEEHiD9ZLbUVEwbdbC/4kio8iGu5NfYb7GeW+n+ausUHHA4t15FkfsiWR4/fhx27UiChYUFysob5xMbRSBHLJNFi+o1//v37yNozRoxRfjq7t+/XzjvsLXrGiVrXjQ4+GzamIhdSUnKMwoLdXdzE4GMZ05dxJOfdnZxUh49Go8lkC3LiqYtO+SGwDqOqyP8jwqkaXvxwsUGI9+rwo1rN0Rw40ATTBf86JEjQj5x+aw++Pl6IzwiTHnUMB5';
+
+        async function gerarPdfEscala(jogoId) {
+            const escalas = await carregarEscalas();
+            const jogos = await carregarJogos();
+            const escala = escalas.find(e => e.jogo_id === jogoId);
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!escala || !jogo) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const margemX = 20;
+            let y = 15;
+
+            if (FCBCR_LOGO_BASE64.indexOf('data:image') === 0) {
+                doc.addImage(FCBCR_LOGO_BASE64, 'PNG', margemX, y - 12, 16, 16);
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas', margemX + (FCBCR_LOGO_BASE64.indexOf('data:image') === 0 ? 17 : 0), y);
+            y += 8;
+
+            doc.setFontSize(11);
+            const subtituloW = doc.getTextWidth('ESCALA DE JOGOS - TEMPORADA 2026');
+            doc.text('ESCALA DE JOGOS - TEMPORADA 2026', (210 - subtituloW) / 2, y +15);
+            y += 20;
+
+            doc.setDrawColor(0, 128, 0);
+            doc.setLineWidth(0.5);
+            doc.line(margemX, y, 190, y);
+            y += 10;
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DADOS DA PARTIDA', margemX, y);
+            y += 8;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+
+            const placar = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined && jogo.pontosCasa !== '') ? jogo.pontosCasa + ' x ' + jogo.pontosFora : 'A definir';
+
+            const dados = [
+                ['Mandante:', jogo.casa],
+                ['Visitante:', jogo.fora],
+                ['Data:', jogo.data],
+                ['Horario:', jogo.hora],
+                ['Local:', jogo.local || 'A definir'],
+                ['Rodada:', jogo.rodada || 'A definir'],
+                ['Status:', jogo.status || 'Agendado'],
+                ['Placar:', placar]
+            ];
+
+            dados.forEach(function(linha) {
+                doc.setFont('helvetica', 'bold');
+                doc.text(linha[0], margemX, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(linha[1], margemX + 35, y);
+                y += 7;
+            });
+
+            y += 5;
+            doc.setDrawColor(0, 128, 0);
+            doc.line(margemX, y, 190, y);
+            y += 10;
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('EQUIPE TECNICA', margemX, y);
+            y += 8;
+
+            doc.setFontSize(10);
+
+            const funcoesPdf = [
+                { chave: 'chefe', label: 'Chefe de Equipe' },
+                { chave: 'arbitro1', label: 'Arbitro 1' },
+                { chave: 'arbitro2', label: 'Arbitro 2' },
+                { chave: 'apontador', label: 'Apontador' },
+                { chave: 'cronometrista', label: 'Cronometrista' },
+                { chave: 'operador24', label: 'Operador de 24' },
+                { chave: 'classificadora', label: 'Classificadora' }
+            ];
+
+            funcoesPdf.forEach(function(f) {
+                if (escala[f.chave]) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(f.label + ':', margemX, y);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(escala[f.chave], margemX + 50, y);
+                    y += 7;
+                }
+            });
+
+            y += 15;
+            doc.setDrawColor(0, 128, 0);
+            doc.line(margemX, y, 190, y);
+            y += 12;
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Documento gerado em ' + new Date().toLocaleDateString('pt-BR') + ' as ' + new Date().toLocaleTimeString('pt-BR'), margemX, y);
+            y += 5;
+            doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas - 2026', margemX, y);
+
+            const nomeArquivo = 'Escala_Jogo_' + jogo.casa.replace(/[^a-zA-Z0-9]/g, '_') + '_vs_' + jogo.fora.replace(/[^a-zA-Z0-9]/g, '_') + '_' + jogo.data.replace('/', '-') + '.pdf';
+            doc.save(nomeArquivo);
+        }
+
+        // ==========================================
+        // ESCALA DE JOGO
+        // ==========================================
+
+        function abrirModalEscalaJogo() {
+            document.getElementById('escalaPasso1').classList.remove('hidden');
+            document.getElementById('escalaPasso2').classList.add('hidden');
+            renderizarListaJogosEscala();
+            const modal = document.getElementById('modalEscalaJogo');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function fecharModalEscalaJogo() {
+            const modal = document.getElementById('modalEscalaJogo');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function renderizarListaJogosEscala() {
+            const jogos = await carregarJogos();
+            const escalas = await carregarEscalas();
+            const container = document.getElementById('listaJogosEscala');
+            container.innerHTML = '';
+
+            if (jogos.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-basketball text-2xl block mb-2"></i>Nenhum jogo cadastrado.</div>';
+                return;
+            }
+
+            const jogosOrdenados = [...jogos].sort((a, b) => {
+                const [d1, m1] = a.data.split('/');
+                const [d2, m2] = b.data.split('/');
+                const dataA = new Date(2026, parseInt(m1) - 1, parseInt(d1));
+                const dataB = new Date(2026, parseInt(m2) - 1, parseInt(d2));
+                return dataA - dataB;
+            });
+
+            jogosOrdenados.forEach(jogo => {
+                const escalaExistente = escalas.find(e => e.jogo_id === jogo.id);
+                const temEscala = !!escalaExistente;
+
+                let badgeEscala = '';
+                if (temEscala) {
+                    badgeEscala = '<span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full ml-2">Escala OK</span>';
+                }
+
+                let badgeStatus = 'bg-blue-100 text-blue-800';
+                if (jogo.status === 'Em Andamento') badgeStatus = 'bg-amber-100 text-amber-800';
+                if (jogo.status === 'Aguardando RevisÃ£o') badgeStatus = 'bg-orange-100 text-orange-800';
+                if (jogo.status === 'Publicado') badgeStatus = 'bg-emerald-100 text-emerald-800';
+
+                container.innerHTML += `
+                    <button onclick="abrirFormEscala(${jogo.id})"
+                        class="w-full text-left bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-400 rounded-xl p-4 transition group flex items-center gap-4">
+                        <div class="shrink-0 w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-basketball text-teal-500 text-base"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="text-xs font-extrabold text-slate-800">
+                                    ${jogo.casa} <span class="text-slate-400 font-normal">vs</span> ${jogo.fora}
+                                </p>
+                                <span class="${badgeStatus} text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">${jogo.status}</span>
+                                ${badgeEscala}
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-0.5">
+                                <i class="fa-regular fa-calendar mr-1"></i>${jogo.data} as ${jogo.hora}
+                                ${jogo.local ? ' | <i class="fa-solid fa-location-dot mr-1"></i>' + jogo.local : ''}
+                            </p>
+                        </div>
+                        <div class="shrink-0 text-slate-300 group-hover:text-teal-500 transition">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                        </div>
+                    </button>
+                `;
+            });
+        }
+
+        async function abrirFormEscala(jogoId) {
+            const jogos = await carregarJogos();
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return;
+
+            const modal = document.getElementById('modalEscalaJogo');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+
+            document.getElementById('escalaJogoId').value = jogoId;
+            document.getElementById('escalaJogoInfo').innerHTML = `<i class="fa-solid fa-basketball mr-1"></i> ${jogo.casa} vs ${jogo.fora} &mdash; ${jogo.data} as ${jogo.hora}`;
+
+            await popularSelectsProfissionais();
+
+            const escalas = await carregarEscalas();
+            const escala = escalas.find(e => e.jogo_id === jogoId);
+
+            if (escala) {
+                document.getElementById('escalaChefe').value = escala.chefe || '';
+                document.getElementById('escalaArbitro1').value = escala.arbitro1 || '';
+                document.getElementById('escalaArbitro2').value = escala.arbitro2 || '';
+                document.getElementById('escalaApontador').value = escala.apontador || '';
+                document.getElementById('escalaCronometrista').value = escala.cronometrista || '';
+                document.getElementById('escalaOperador24').value = escala.operador24 || '';
+                document.getElementById('escalaClassificadora').value = escala.classificadora || '';
+            } else {
+                document.getElementById('escalaChefe').value = '';
+                document.getElementById('escalaArbitro1').value = '';
+                document.getElementById('escalaArbitro2').value = '';
+                document.getElementById('escalaApontador').value = '';
+                document.getElementById('escalaCronometrista').value = '';
+                document.getElementById('escalaOperador24').value = '';
+                document.getElementById('escalaClassificadora').value = '';
+            }
+
+            document.getElementById('escalaPasso1').classList.add('hidden');
+            document.getElementById('escalaPasso2').classList.remove('hidden');
+        }
+
+        function voltarPasso1Escala() {
+            document.getElementById('escalaPasso1').classList.remove('hidden');
+            document.getElementById('escalaPasso2').classList.add('hidden');
+        }
+
+        async function popularSelectsProfissionais() {
+            const profissionais = await carregarProfissionais();
+
+            const selects = [
+                { id: 'escalaChefe', funcao: '' },
+                { id: 'escalaArbitro1', funcao: 'Arbitro (A)' },
+                { id: 'escalaArbitro2', funcao: 'Arbitro (A)' },
+                { id: 'escalaApontador', funcao: '' },
+                { id: 'escalaCronometrista', funcao: '' },
+                { id: 'escalaOperador24', funcao: '' },
+                { id: 'escalaClassificadora', funcao: 'Classificador (A)' }
+            ];
+
+            selects.forEach(sel => {
+                const el = document.getElementById(sel.id);
+                if (!el) return;
+                const valorAtual = el.value;
+                el.innerHTML = '<option value="">Selecione...</option>';
+                const lista = sel.funcao
+                    ? profissionais.filter(p => p.funcao === sel.funcao)
+                    : profissionais;
+                lista.forEach(p => {
+                    el.innerHTML += `<option value="${p.nome}">${p.nome} (${p.cidade} - ${p.categoria})</option>`;
+                });
+                if (valorAtual) el.value = valorAtual;
+            });
+        }
+
+        async function salvarEscalaJogo(event) {
+            event.preventDefault();
+            const jogoId = parseInt(document.getElementById('escalaJogoId').value);
+            const chefe = document.getElementById('escalaChefe').value;
+            const arbitro1 = document.getElementById('escalaArbitro1').value;
+            const arbitro2 = document.getElementById('escalaArbitro2').value;
+            const apontador = document.getElementById('escalaApontador').value;
+            const cronometrista = document.getElementById('escalaCronometrista').value;
+            const operador24 = document.getElementById('escalaOperador24').value;
+            const classificadora = document.getElementById('escalaClassificadora').value;
+
+            if (!chefe || !arbitro1 || !arbitro2 || !apontador || !cronometrista || !operador24 || !classificadora) {
+                alert('Preencha todos os campos da escala!');
+                return;
+            }
+
+            try {
+                await _dbSalvarEscalaJogo({
+                    jogoId,
+                    chefe,
+                    arbitro1,
+                    arbitro2,
+                    apontador,
+                    cronometrista,
+                    operador24,
+                    classificadora
+                });
+                alert('Escala salva com sucesso!');
+                fecharModalEscalaJogo();
+                renderizarEscalaArbitros();
+            } catch(e) {
+                alert('Erro ao salvar escala: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // INICIALIZACAO
+        // ==========================================
+
+        (async function init() {
+            const logado = await obterUsuarioLogado();
+            if (logado) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                await aplicarControleAcesso();
+            }
+            await renderizarFilaJogos();
+            await renderizarEscalaArbitros();
+        })();
+    </script>
+</body>
+</html>
