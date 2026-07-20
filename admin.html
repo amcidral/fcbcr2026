@@ -2731,6 +2731,8 @@
                     profMap[p.nome] = p;
                 });
 
+                const classificacaoPdf = await carregarClassificacao();
+
                 const funcoesPdf = [
                     { chave: 'chefe', label: 'Chefe de Equipe' },
                     { chave: 'arbitro1', label: 'Arbitro 1' },
@@ -2755,14 +2757,20 @@
 
                 if (escala.transporte && escala.transporte.length > 0) {
                     y += 5;
+                    doc.setDrawColor(200, 100, 0);
+                    doc.line(margemX, y, 190, y);
+                    y += 10;
                     doc.setFontSize(11);
                     doc.setFont('helvetica', 'bold');
-                    doc.text('TRANSPORTE', margemX, y);
+                    doc.text('TRANSPORTE - Origem x Destino', margemX, y);
                     y += 8;
-                    doc.setFontSize(10);
+                    doc.setFontSize(9);
                     doc.setFont('helvetica', 'normal');
+                    const destino = jogo.local || (classificacaoPdf.find(t => t.time === jogo.casa)?.cidade || 'A definir');
                     escala.transporte.forEach(function(nome) {
-                        doc.text(nome, margemX + 10, y);
+                        const prof = profMap[nome];
+                        const origem = prof ? prof.cidade : '?';
+                        doc.text(nome + '  (' + origem + ' -> ' + destino + ')', margemX + 10, y);
                         y += 6;
                     });
                     y += 3;
