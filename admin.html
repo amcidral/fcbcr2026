@@ -2595,7 +2595,24 @@
         // ==========================================
         // GERAR PDF DA ESCALA
         // ==========================================
-        const FCBCR_LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACODSURBVHhe7V13WFTX9uW9mPZsz15QUcD2NMbEGDUxientpZrEbuwNRbAg0pUOgoA0QYrSEQG7qAiIFEFQwN57x0IbYIZZv73PzOjAgGJ/f/zW952PuXeas+4+e6+9zz5XLblc/jUNu/8fTzeYwJV4xSguLkbR4SLsTUvDzqQkJCYkIjIyCmFhYVi3bp34GxMdja2bNyN59y5k7NuHs2fOoKysVPkJrw5MoJ3y8UvBvXv3sH9/DiLCI+Hh4QVXVzf4ePsgPDwc27ZuFeQUFhTi1MmTOHv2LM6fO49z9PfkiRM4dPAgUvfswYb1cVgbGgoPd3e4ubrA13sVNiYm4MTxY5DJpMpvejl4KQRKKiqQmZmJ1f6r4eKyAqtXB2D37mScP38elZWVylc9He7TBTly+DA2JiTAy8MDK5ydEUEWy4S/DLxQAm/evIn169fDydEJawLXIDcnF+Vl5cpnXwyuXb0mLHmFq6sYe/emobq6Wvns88cLIfD2rVsIJ9/l5OCAhPgE3CIiXwUOk2X6+fph+XJb7Ny5C/Rblc88PzxXAqurqigAJMDB3k44/PLyxllbeVmZ+MtTuoo+g5FMU3z7tm1I37sXUqlUBA22aLYwRlVV46f+uXPn4OPjC1tbO+QeOKA8+3zw3AgsOHQIjvb2wv+U3L+vPPto5GRnw8LMHDu27xDW4eToiKQdO8Rz9suX4/ix43Cws6fgcEL4OJ6ahvPmCb+ZEB+Pe3fvIWD1akHy3bt3xfsehaKiItjZO2AVkXnnzh3l2WfDMxMok8louq6l6WovIufjwES5r3ATVnGH5Iu7m7uItkxGSFAwHGjaX758GfY2NnChgOBJgaGmpoai7EbsS0+Hl6cn1sfGigu2MTERa0NCsW9vOi5cuCAIvnr1qvKbGsamTZuwlC5cFl3AZ8UzEXj9+jU4E3GRJEGYyIZw+tQprFu7Vvgkth5fki3s4NkK2CqSd+9Gfl4+/H19hTVxwIkl3cdIIMvbm7aXrHQ7tpBbuHHjBiaOH49MkjsB/v7IP5AnLJQ/d9Qff4rvOJifjytXroj3NwR2FzbLlmFdeITyzNPhqQlkC7AwW4rsrEzlmfpxk36w76pV4gexBuQfakfTM4JId3F2wRWyNvZ158ki+XnG7Vu3aUoqHnMEvX79OipICqmm6d7UVJr+++FELuNAbi4FqVvYSVOfA1cqPRcWupam/zFxobZv2w6JRCLeVxdS+mx/klZOLi4kyhV++EnxVATyVDIzXUJT74zyTG2oW+O1a9fguVKR7DBBG+LisHXLFnHMxJSWPn02UXz7thDWRw4fwQGWSBS0pk+bKvzoRbIwvsisP3kGsLvgYFQf4jfEw9zSCsV3ipVnGo8nJjCN0i0rS4sGpQlPH2+vVVjl5fXAothXRdJUWe3nh5ycnGcWz49CHOnOPcnJNDOycP3adZEesnV50EVMpMBz6eJF5StrI4lcxGKTxbjxhJLriQhMJ8uztrQkYjQjHn2OyGl5utbQ41wiKiAgQPkscPToUWFxLwM8ZfmCBZEvzcrIIPI8RLp4gawyk44bwh7Ks01MTVB8t/ERutEEHiD9ZLbUVEwbdbC/4kio8iGu5NfYb7GeW+n+ausUHHA4t15FkfsiWR4/fhx27UiChYUFysob5xMbRSBHLJNFi+o1//v37yNozRoxRfjq7t+/XzjvsLXrGiVrXjQ4+GzamIhdSUnKMwoLdXdzE4GMZ05dxJOfdnZxUh49Go8lkC3LiqYtO+SGwDqOqyP8jwqkaXvxwsUGI9+rwo1rN0Rw40ATTBf86JEjQj5x+aw++Pl6IzwiTHnUMB5';
+        let _cacheLogoBase64 = null;
+
+        async function carregarLogoBase64() {
+            if (_cacheLogoBase64) return _cacheLogoBase64;
+            try {
+                const resp = await fetch('logos/fcbcr.png');
+                const blob = await resp.blob();
+                _cacheLogoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+                return _cacheLogoBase64;
+            } catch (e) {
+                console.warn('Erro ao carregar logo:', e);
+                return null;
+            }
+        }
 
         async function gerarPdfEscala(jogoId) {
             try {
@@ -2619,16 +2636,17 @@
                 const margemX = 20;
                 let y = 15;
 
-                if (FCBCR_LOGO_BASE64 && FCBCR_LOGO_BASE64.indexOf('data:image') === 0) {
+                const logoBase64 = await carregarLogoBase64();
+                if (logoBase64) {
                     try {
-                        doc.addImage(FCBCR_LOGO_BASE64, 'PNG', margemX, y - 12, 16, 16);
+                        doc.addImage(logoBase64, 'PNG', margemX, y - 12, 16, 16);
                     } catch(e) {
                         console.warn('Erro ao adicionar logo ao PDF:', e);
                     }
                 }
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(14);
-                doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas', margemX + 20, y);
+                doc.text('FCBCR - Federacao Catarinense de Basquetebol em Cadeira de Rodas', margemX + (logoBase64 ? 20 : 0), y);
                 y += 8;
 
                 doc.setFontSize(11);
