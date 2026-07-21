@@ -515,7 +515,7 @@
                             <span class="w-6 h-6 rounded-full ${badgeRank} flex items-center justify-center mx-auto">${medal}${i + 1}</span>
                         </td>
                         <td class="py-2.5 px-2 font-bold text-slate-800 truncate max-w-[120px]">
-                            <span>${emoticonsTimes[t.time] || '🏀'}</span> ${t.time}
+                            ${t.logo ? `<img src="${t.logo}" alt="" class="w-5 h-5 object-contain inline-block mr-1" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">` : ''}<span class="inline"${t.logo ? ' style="display:none"' : ''}>${emoticonsTimes[t.time] || '🏀'}</span> ${t.time}
                         </td>
                         <td class="py-2.5 px-1 text-center text-slate-500">${totalJogos}</td>
                         <td class="py-2.5 px-1 text-center text-green-600 font-bold">${t.v}</td>
