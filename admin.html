@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo � FCBCR 2026</title>
+    <title>Painel Administrativo — FCBCR 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +44,7 @@
                     <img src="logos/fcbcr.png" alt="FCBCR" class="w-12 h-12 object-contain">
                 </div>
                 <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">Painel Administrativo</h2>
-                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">FCBCR � Federacao Catarinense de BCR</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">FCBCR - Federacao Catarinense de BCR</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
@@ -102,9 +102,9 @@
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nivel de Acesso</label>
                     <select id="usuarioRole" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 transition">
-                        <option value="gestor">Gestor � Cadastros e Resultados</option>
-                        <option value="escalador">Escalador � Somente Escalas</option>
-                        <option value="admin">Administrador � Acesso Total</option>
+                        <option value="gestor">Gestor - Cadastros e Resultados</option>
+                        <option value="escalador">Escalador - Somente Escalas</option>
+                        <option value="admin">Administrador - Acesso Total</option>
                     </select>
                 </div>
                 <div class="flex gap-2 pt-2">
@@ -123,7 +123,7 @@
                 </div>
                 <div>
                     <h1 class="font-black text-sm tracking-wider uppercase">FCBCR 2026</h1>
-                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Painel de Gest�o</p>
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Painel de Gestão</p>
                 </div>
             </div>
 
@@ -181,8 +181,8 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div>
-                    <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">�rea Administrativa</h2>
-                    <p class="text-[11px] text-slate-400">Controle de campeonatos, equipes, s�mulas e dados t�cnicos</p>
+                    <h2 class="text-lg font-black text-slate-800 uppercase tracking-wide">Área Administrativa</h2>
+                    <p class="text-[11px] text-slate-400">Controle de campeonatos, equipes, súmulas e dados técnicos</p>
                 </div>
             </div>
             
@@ -201,7 +201,7 @@
         <main id="visao-geral" class="p-8 space-y-6 flex-1">
 
             <div>
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Atalhos de Lan�amento R�pido</h3>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Atalhos de Lançamento Rápido</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
                     
                     <button id="btnAgendarPartida" onclick="abrirModalPartida()" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-emerald-500 hover:shadow transition flex items-center gap-4 text-left group">
@@ -273,8 +273,8 @@
                     <div>
                         <div class="flex justify-between items-center mb-6">
                             <div>
-                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Fila de Publica��o de Jogos</h3>
-                                <p class="text-[11px] text-slate-400">Confirme os placares e dados antes de publicar no Portal P�blico</p>
+                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Fila de Publicação de Jogos</h3>
+                                <p class="text-[11px] text-slate-400">Confirme os placares e dados antes de publicar no Portal Público</p>
                             </div>
                             <span id="contadorPendentes" class="text-xs bg-amber-50 text-amber-800 font-bold px-2.5 py-1 rounded-md border border-amber-100">3 Pendentes</span>
                         </div>
@@ -287,7 +287,7 @@
                                         <th class="py-2 px-2">Partida</th>
                                         <th class="py-2 px-2 text-center">Placar Sugerido</th>
                                         <th class="py-2 px-2 text-center">Status</th>
-                                        <th class="py-2 px-2 text-right">A��o</th>
+                                        <th class="py-2 px-2 text-right">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelaJogosFila" class="text-xs font-medium text-slate-700 divide-y divide-slate-50">
@@ -301,7 +301,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-4">
                             <div>
-                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Escala de �rbitros</h3>
+                                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Escala de Árbitros</h3>
                                 <p class="text-[11px] text-slate-400">Jogos da rodada atual</p>
                             </div>
                             <button class="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition">Ver Escalas</button>
@@ -310,7 +310,7 @@
                         <div class="space-y-3.5">
                             <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2">
                                 <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 text-[10px] font-bold text-slate-500">
-                                    <span>JOGO #19 � HOJE 15:00</span>
+                                    <span>JOGO #19 - HOJE 15:00</span>
                                     <span class="text-emerald-600">CONFIRMADA</span>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -319,14 +319,14 @@
                                     </div>
                                     <div>
                                         <p class="text-xs font-extrabold text-slate-800 leading-none">Marcos Silva</p>
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">�rbitro Principal (FCA)</p>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Árbitro Principal (FCA)</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2">
                                 <div class="flex items-center justify-between border-b border-slate-200/60 pb-1.5 text-[10px] font-bold text-slate-500">
-                                    <span>JOGO #20 � HOJE 17:00</span>
+                                    <span>JOGO #20 - HOJE 17:00</span>
                                     <span class="text-emerald-600">CONFIRMADA</span>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -335,7 +335,7 @@
                                     </div>
                                     <div>
                                         <p class="text-xs font-extrabold text-slate-800 leading-none">Roberto Souza</p>
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">�rbitro Principal (FCA)</p>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Árbitro Principal (FCA)</p>
                                     </div>
                                 </div>
                             </div>
@@ -350,7 +350,7 @@
         </main>
 
         <footer class="bg-white border-t border-slate-200 py-4 px-8 text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-            Federa��o Catarinense de Basquetebol em Cadeira de Rodas (FCBCR) � 2026
+            Federação Catarinense de Basquetebol em Cadeira de Rodas (FCBCR) - 2026
         </footer>
     </div>
 
@@ -359,7 +359,7 @@
             <div class="bg-emerald-950 text-white px-6 py-4 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-2.5">
                     <i class="fa-solid fa-pen-to-square text-emerald-400 text-lg"></i>
-                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Lan�ar S�mula Detalhada</h4>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Lançar Súmula Detalhada</h4>
                 </div>
                 <button onclick="fecharModalSumula()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
             </div>
@@ -383,7 +383,7 @@
 
                 <div class="space-y-3">
                     <div class="border-b border-slate-200 pb-2">
-                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Pontua��o Individual por Atleta</h5>
+                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Pontuação Individual por Atleta</h5>
                         <p class="text-[10px] text-slate-400">Insira os pontos marcados por cada jogador que entrou em quadra</p>
                     </div>
 
@@ -408,7 +408,7 @@
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
                     <button type="button" onclick="fecharModalSumula()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Publicar S�mula</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Publicar Súmula</button>
                 </div>
             </form>
         </div>
@@ -431,11 +431,11 @@
                         <select id="selectMandante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
                             <option value="">Selecione...</option>
                             <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
-                            <option value="APEDEB/FME BRUSQUE/CLASSE M�VEIS">APEDEB/FME BRUSQUE/CLASSE M�VEIS (Brusque)</option>
-                            <option value="�GUIAS/SESPORT CONC�RDIA">�GUIAS/SESPORT CONC�RDIA (Conc�rdia)</option>
-                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador">Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador</option>
-                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florian�polis)</option>
-                            <option value="Tigres Sobre Rodas/FME Crici�ma">Tigres Sobre Rodas/FME Crici�ma (Crici�ma)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
                         </select>
                     </div>
                     <div>
@@ -443,11 +443,11 @@
                         <select id="selectVisitante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
                             <option value="">Selecione...</option>
                             <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
-                            <option value="APEDEB/FME BRUSQUE/CLASSE M�VEIS">APEDEB/FME BRUSQUE/CLASSE M�VEIS (Brusque)</option>
-                            <option value="�GUIAS/SESPORT CONC�RDIA">�GUIAS/SESPORT CONC�RDIA (Conc�rdia)</option>
-                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador">Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador</option>
-                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florian�polis)</option>
-                            <option value="Tigres Sobre Rodas/FME Crici�ma">Tigres Sobre Rodas/FME Crici�ma (Crici�ma)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
                         </select>
                     </div>
                 </div>
@@ -468,8 +468,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Gin�sio</label>
-                    <input type="text" id="partidaLocal" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: Gin�sio Abel Schulz � Joinville - SC">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Ginásio</label>
+                    <input type="text" id="partidaLocal" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: Ginásio Abel Schulz — Joinville - SC">
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -498,11 +498,11 @@
                         <select id="editSelectMandante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
                             <option value="">Selecione...</option>
                             <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
-                            <option value="APEDEB/FME BRUSQUE/CLASSE M�VEIS">APEDEB/FME BRUSQUE/CLASSE M�VEIS (Brusque)</option>
-                            <option value="�GUIAS/SESPORT CONC�RDIA">�GUIAS/SESPORT CONC�RDIA (Conc�rdia)</option>
-                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador">Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador</option>
-                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florian�polis)</option>
-                            <option value="Tigres Sobre Rodas/FME Crici�ma">Tigres Sobre Rodas/FME Crici�ma (Crici�ma)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
                         </select>
                     </div>
                     <div>
@@ -510,11 +510,11 @@
                         <select id="editSelectVisitante" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
                             <option value="">Selecione...</option>
                             <option value="CEPE/Raposas do Sul/Sesporte">CEPE/Raposas do Sul/Sesporte (Joinville)</option>
-                            <option value="APEDEB/FME BRUSQUE/CLASSE M�VEIS">APEDEB/FME BRUSQUE/CLASSE M�VEIS (Brusque)</option>
-                            <option value="�GUIAS/SESPORT CONC�RDIA">�GUIAS/SESPORT CONC�RDIA (Conc�rdia)</option>
-                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador">Spartacus/SESC/Sec. Esp. e Lazer/Ca�ador</option>
-                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florian�polis)</option>
-                            <option value="Tigres Sobre Rodas/FME Crici�ma">Tigres Sobre Rodas/FME Crici�ma (Crici�ma)</option>
+                            <option value="APEDEB/FME BRUSQUE/CLASSE MÓVEIS">APEDEB/FME BRUSQUE/CLASSE MÓVEIS (Brusque)</option>
+                            <option value="ÁGUIAS/SESPORT CONCÓRDIA">ÁGUIAS/SESPORT CONCÓRDIA (Concórdia)</option>
+                            <option value="Spartacus/SESC/Sec. Esp. e Lazer/Caçador">Spartacus/SESC/Sec. Esp. e Lazer/Caçador</option>
+                            <option value="AFLODEF/OMDA/FMEFLORIPA">AFLODEF/OMDA/FMEFLORIPA (Florianópolis)</option>
+                            <option value="Tigres Sobre Rodas/FME Criciúma">Tigres Sobre Rodas/FME Criciúma (Criciúma)</option>
                         </select>
                     </div>
                 </div>
@@ -535,8 +535,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Gin�sio</label>
-                    <input type="text" id="editPartidaLocal" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: Gin�sio Abel Schulz � Joinville - SC">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local / Ginásio</label>
+                    <input type="text" id="editPartidaLocal" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: Ginásio Abel Schulz — Joinville - SC">
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
@@ -553,7 +553,7 @@
                         <select id="editPartidaStatus" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition">
                             <option value="Agendado">Agendado</option>
                             <option value="Em Andamento">Em Andamento</option>
-                            <option value="Aguardando Revis�o">Aguardando Revis�o</option>
+                            <option value="Aguardando Revisão">Aguardando Revisão</option>
                             <option value="Publicado">Publicado</option>
                         </select>
                     </div>
@@ -561,7 +561,7 @@
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" onclick="fecharModalEditarPartida()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Altera��es</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Alterações</button>
                 </div>
             </form>
         </div>
@@ -573,7 +573,7 @@
             <div class="bg-amber-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-2.5">
                     <i class="fa-solid fa-pen-to-square text-amber-300 text-lg"></i>
-                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Selecionar Jogo para S�mula</h4>
+                    <h4 class="font-extrabold uppercase text-sm tracking-wider">Selecionar Jogo para Súmula</h4>
                 </div>
                 <button onclick="fecharModalSelecionarJogo()" class="text-slate-300 hover:text-white transition text-lg">&times;</button>
             </div>
@@ -585,7 +585,7 @@
                     <select id="filtroStatusJogo" onchange="renderizarListaJogosSelecao()" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-amber-500 transition">
                         <option value="">Todos</option>
                         <option value="Em Andamento">Em Andamento</option>
-                        <option value="Aguardando Revis�o">Aguardando Revis�o</option>
+                        <option value="Aguardando Revisão">Aguardando Revisão</option>
                         <option value="Publicado">Publicados</option>
                     </select>
                 </div>
@@ -630,7 +630,7 @@
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">N� Camisa</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nº Camisa</label>
                             <input type="number" id="atletaCamisa" min="0" max="99" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 10">
                         </div>
                         <div>
@@ -697,7 +697,7 @@
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">N� Camisa</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nº Camisa</label>
                         <input type="number" id="editAtletaCamisa" min="0" max="99" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition">
                     </div>
                     <div>
@@ -725,7 +725,7 @@
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" onclick="fecharModalEditarAtleta()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edi��o</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edição</button>
                 </div>
             </form>
         </div>
@@ -782,7 +782,7 @@
                     </div>
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[10px] text-blue-700 font-semibold">
                         <i class="fa-solid fa-circle-info mr-1"></i>
-                        A equipe ser� adicionada ao sistema e dispon�vel para cadastro de atletas e agendamento de partidas.
+                        A equipe será adicionada ao sistema e disponível para cadastro de atletas e agendamento de partidas.
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                         <button type="button" onclick="fecharModalEquipe()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
@@ -839,7 +839,7 @@
                     </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" onclick="fecharModalEditarEquipe()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edi��o</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Salvar Edição</button>
                 </div>
             </form>
         </div>
@@ -1052,18 +1052,18 @@
                     </div>
 
                     <div class="border-b border-slate-100 pb-2">
-                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Equipe T�cnica</h5>
+                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Equipe Técnica</h5>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">�rbitro 1</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Árbitro 1</label>
                             <select id="escalaArbitro1" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">�rbitro 2</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Árbitro 2</label>
                             <select id="escalaArbitro2" onchange="atualizarTransporte()" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition">
                                 <option value="">Selecione...</option>
                             </select>
