@@ -14,14 +14,39 @@
         .bg-fcbcr-accent { background-color: #f2a900; } /* Amarelo/Dourado */
         .bg-fcbcr-blue { background-color: #0056b3; } /* Azul Dinâmico */
         .text-fcbcr-accent { color: #f2a900; }
+
+        /* Sidebar mobile */
+        #sidebarOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 40;
+        }
+        #sidebarOverlay.active { display: block; }
+        @media (max-width: 767px) {
+            #mainSidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                height: 100% !important;
+                z-index: 50 !important;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            #mainSidebar.open { transform: translateX(0); }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
 </head>
 <body class="bg-slate-100 font-sans flex h-screen overflow-hidden">
 
-    <!-- 1. BARRA LATERAL (SIDEBAR) -->
-    <aside class="w-64 bg-fcbcr-dark text-white flex flex-col justify-between h-full flex-shrink-0">
+    <!-- OVERLAY MOBILE -->
+    <div id="sidebarOverlay" onclick="fecharSidebar()"></div>
+
+    <!-- 1. BARRA LATERAL (SIDEBAR) - Desktop -->
+    <aside id="mainSidebar" class="w-64 bg-fcbcr-dark text-white flex flex-col justify-between h-full flex-shrink-0">
         <div>
             <!-- Logo e Nome -->
             <div class="p-6 flex items-center gap-3 border-b border-blue-900">
@@ -68,16 +93,21 @@
     <div class="flex-1 flex flex-col h-full overflow-y-auto">
         
         <!-- BARRA SUPERIOR (HEADER) -->
-        <header class="bg-fcbcr-dark text-white px-8 py-4 flex justify-between items-center shadow-md flex-shrink-0">
-            <div>
-                <h2 class="text-xl font-bold tracking-wide">CAMPEONATO CATARINENSE DE BCR 2026</h2>
-                <p class="text-xs text-blue-300">Boletin Atualizado</p>
+        <header class="bg-fcbcr-dark text-white px-4 md:px-8 py-4 flex justify-between items-center shadow-md flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="abrirSidebar()" class="md:hidden text-white text-xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h2 class="text-base md:text-xl font-bold tracking-wide">CAMPEONATO CATARINENSE DE BCR 2026</h2>
+                    <p class="text-[10px] md:text-xs text-blue-300">Boletim Atualizado</p>
+                </div>
             </div>
-            <div class="flex items-center gap-4">
-                <a href="admin.html" class="bg-fcbcr-accent text-slate-900 px-4 py-2 rounded-lg font-bold text-sm hover:bg-yellow-500 transition shadow flex items-center gap-2">
-                    <i class="fa-solid fa-lock"></i> ÁREA ADMINISTRATIVA
+            <div class="flex items-center gap-2 md:gap-4">
+                <a href="admin.html" class="bg-fcbcr-accent text-slate-900 px-3 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm hover:bg-yellow-500 transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i> <span class="hidden sm:inline">ÁREA ADMINISTRATIVA</span><span class="sm:hidden">ADMIN</span>
                 </a>
-                <div class="text-right text-xs text-blue-200 border-l border-blue-800 pl-4">
+                <div class="hidden md:block text-right text-xs text-blue-200 border-l border-blue-800 pl-4">
                     <p class="font-semibold">21 de Junho de 2025</p>
                     <p>Sábado, 16:30</p>
                 </div>
@@ -85,7 +115,7 @@
         </header>
 
         <!-- CORPO DA PÁGINA (DASHBOARD) -->
-        <main class="p-8 space-y-6">
+        <main class="p-4 md:p-8 space-y-6">
 
             <!-- ABA: INÍCIO (DASHBOARD) -->
             <div id="aba-inicio" class="space-y-6">
@@ -668,10 +698,21 @@
         // Carrega as informações dinâmicas automaticamente ao abrir o portal público
         window.onload = carregarDadosPublicos;
 
+        // Sidebar mobile
+        function abrirSidebar() {
+            document.getElementById('mainSidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+        function fecharSidebar() {
+            document.getElementById('mainSidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
         // Navegação por abas
         const abas = ['inicio', 'classificacao', 'resultados', 'calendario', 'cestinhas'];
 
         function trocarAba(aba) {
+            fecharSidebar();
             abas.forEach(a => {
                 document.getElementById('aba-' + a).classList.add('hidden');
                 const menuItem = document.getElementById('menu-' + a);
