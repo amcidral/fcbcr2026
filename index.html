@@ -15,6 +15,14 @@
         .bg-fcbcr-blue { background-color: #0056b3; } /* Azul Dinâmico */
         .text-fcbcr-accent { color: #f2a900; }
 
+        /* Previne overflow horizontal no mobile */
+        *, *::before, *::after { box-sizing: border-box; }
+        html { overflow-x: hidden; }
+        body { overflow-x: hidden; }
+
+        /* Corrige truncamento em flex children */
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         /* Sidebar mobile */
         #sidebarOverlay {
             display: none;
@@ -90,21 +98,21 @@
     </aside>
 
     <!-- 2. ÁREA DE CONTEÚDO PRINCIPAL (MAIN CONTENT) -->
-    <div class="flex-1 flex flex-col h-full overflow-y-auto">
+    <div class="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden">
         
         <!-- BARRA SUPERIOR (HEADER) -->
-        <header class="bg-fcbcr-dark text-white px-4 md:px-8 py-4 flex justify-between items-center shadow-md flex-shrink-0">
-            <div class="flex items-center gap-3">
-                <button onclick="abrirSidebar()" class="md:hidden text-white text-xl">
+        <header class="bg-fcbcr-dark text-white px-3 md:px-8 py-3 md:py-4 flex justify-between items-center shadow-md flex-shrink-0">
+            <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                <button onclick="abrirSidebar()" class="md:hidden text-white text-xl shrink-0">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div>
-                    <h2 class="text-base md:text-xl font-bold tracking-wide">CAMPEONATO CATARINENSE DE BCR 2026</h2>
-                    <p class="text-[10px] md:text-xs text-blue-300">Boletim Atualizado</p>
+                <div class="min-w-0">
+                    <h2 class="text-[11px] md:text-xl font-bold tracking-wide truncate">CAMPEONATO CATARINENSE DE BCR 2026</h2>
+                    <p class="text-[9px] md:text-xs text-blue-300">Boletim Atualizado</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 md:gap-4">
-                <a href="admin.html" class="bg-fcbcr-accent text-slate-900 px-3 md:px-4 py-2 rounded-lg font-bold text-xs md:text-sm hover:bg-yellow-500 transition shadow flex items-center gap-2">
+            <div class="flex items-center gap-1.5 md:gap-4 shrink-0 ml-2">
+                <a href="admin.html" class="bg-fcbcr-accent text-slate-900 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-[10px] md:text-sm hover:bg-yellow-500 transition shadow flex items-center gap-1.5 md:gap-2">
                     <i class="fa-solid fa-lock"></i> <span class="hidden sm:inline">ÁREA ADMINISTRATIVA</span><span class="sm:hidden">ADMIN</span>
                 </a>
                 <div class="hidden md:block text-right text-xs text-blue-200 border-l border-blue-800 pl-4">
@@ -115,69 +123,69 @@
         </header>
 
         <!-- CORPO DA PÁGINA (DASHBOARD) -->
-        <main class="p-4 md:p-8 space-y-6">
+        <main class="p-3 md:p-8 space-y-4 md:space-y-6">
 
             <!-- ABA: INÍCIO (DASHBOARD) -->
             <div id="aba-inicio" class="space-y-6">
             
             <!-- GRID DE TOPO: PRÓXIMO JOGO + STATS RÁPIDAS -->
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
                 
                 <!-- COLUNA ESQUERDA (Ocupa 2/3): CARD PRÓXIMO JOGO -->
-                <div id="bannerProximoJogo" class="xl:col-span-2 bg-gradient-to-r from-[#00224d] via-[#002d72] to-[#00224d] rounded-2xl p-6 shadow-lg border border-blue-900/50 relative overflow-hidden text-white flex flex-col justify-between">
+                <div id="bannerProximoJogo" class="xl:col-span-2 bg-gradient-to-r from-[#00224d] via-[#002d72] to-[#00224d] rounded-2xl p-4 md:p-6 shadow-lg border border-blue-900/50 relative overflow-hidden text-white flex flex-col justify-between">
                     
                     <!-- Selo Próximo Jogo -->
-                    <div class="absolute top-6 left-6 bg-fcbcr-accent text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded uppercase tracking-wider shadow">
+                    <div class="absolute top-3 left-3 md:top-6 md:left-6 bg-fcbcr-accent text-slate-950 font-extrabold text-[10px] md:text-xs px-2.5 py-1 md:px-3 md:py-1.5 rounded uppercase tracking-wider shadow">
                         Próximo Jogo
                     </div>
 
                     <!-- Área Central: Confronto -->
-                    <div class="flex flex-col md:flex-row items-center justify-around py-8 px-4 gap-8">
+                    <div class="flex flex-col md:flex-row items-center justify-around py-6 md:py-8 px-2 md:px-4 gap-4 md:gap-8">
                         
                         <!-- Equipe Casa -->
-                        <div class="flex flex-col items-center gap-3 w-full md:w-2/5 justify-end">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center p-3 shadow-inner overflow-hidden">
+                        <div class="flex flex-col items-center gap-2 md:gap-3 w-full md:w-2/5 justify-end">
+                            <div class="w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center p-2 md:p-3 shadow-inner overflow-hidden">
                                 <img id="bannerCasaLogo" src="" alt="" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                <span id="bannerCasaEmoji" class="text-5xl" style="display:none">🏀</span>
+                                <span id="bannerCasaEmoji" class="text-3xl md:text-5xl" style="display:none">🏀</span>
                             </div>
-                            <div class="text-center">
-                                <h3 id="bannerCasaNome" class="font-extrabold text-sm tracking-wide">--</h3>
-                                <p id="bannerCasaCidade" class="text-[10px] text-blue-300 uppercase font-semibold">--</p>
+                            <div class="text-center min-w-0 w-full px-1">
+                                <h3 id="bannerCasaNome" class="font-extrabold text-xs md:text-sm tracking-wide truncate">--</h3>
+                                <p id="bannerCasaCidade" class="text-[9px] md:text-[10px] text-blue-300 uppercase font-semibold truncate">--</p>
                             </div>
                         </div>
 
                         <!-- Divisor VS -->
-                        <div class="flex flex-col items-center justify-center">
-                            <span class="text-fcbcr-accent font-black text-4xl italic tracking-wider">VS</span>
+                        <div class="flex flex-col items-center justify-center shrink-0">
+                            <span class="text-fcbcr-accent font-black text-2xl md:text-4xl italic tracking-wider">VS</span>
                         </div>
 
                         <!-- Equipe Fora -->
-                        <div class="flex flex-col items-center gap-3 w-full md:w-2/5 justify-start">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center p-3 shadow-inner overflow-hidden">
+                        <div class="flex flex-col items-center gap-2 md:gap-3 w-full md:w-2/5 justify-start">
+                            <div class="w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center p-2 md:p-3 shadow-inner overflow-hidden">
                                 <img id="bannerForaLogo" src="" alt="" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                <span id="bannerForaEmoji" class="text-5xl" style="display:none">🏀</span>
+                                <span id="bannerForaEmoji" class="text-3xl md:text-5xl" style="display:none">🏀</span>
                             </div>
-                            <div class="text-center">
-                                <h3 id="bannerForaNome" class="font-extrabold text-sm tracking-wide">--</h3>
-                                <p id="bannerForaCidade" class="text-[10px] text-blue-300 uppercase font-semibold">--</p>
+                            <div class="text-center min-w-0 w-full px-1">
+                                <h3 id="bannerForaNome" class="font-extrabold text-xs md:text-sm tracking-wide truncate">--</h3>
+                                <p id="bannerForaCidade" class="text-[9px] md:text-[10px] text-blue-300 uppercase font-semibold truncate">--</p>
                             </div>
                         </div>
 
                     </div>
 
                     <!-- Rodapé do Card: Informações de Data e Local -->
-                    <div class="bg-blue-950/60 rounded-xl p-4 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 border border-blue-800/40 text-sm">
-                        <div class="flex items-center gap-2.5 text-blue-100">
-                            <i class="fa-solid fa-calendar-days text-fcbcr-accent text-base"></i>
+                    <div class="bg-blue-950/60 rounded-xl p-3 md:p-4 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-8 border border-blue-800/40 text-xs md:text-sm">
+                        <div class="flex items-center gap-2 md:gap-2.5 text-blue-100">
+                            <i class="fa-solid fa-calendar-days text-fcbcr-accent text-sm md:text-base"></i>
                             <span id="bannerData" class="font-semibold">--</span>
                         </div>
-                        <div class="flex items-center gap-2.5 text-blue-100">
-                            <i class="fa-regular fa-clock text-fcbcr-accent text-base"></i>
+                        <div class="flex items-center gap-2 md:gap-2.5 text-blue-100">
+                            <i class="fa-regular fa-clock text-fcbcr-accent text-sm md:text-base"></i>
                             <span id="bannerHora" class="font-semibold">--</span>
                         </div>
-                        <div class="flex items-center gap-2.5 text-blue-100 text-center md:text-left">
-                            <i class="fa-solid fa-location-dot text-fcbcr-accent text-base"></i>
-                            <span id="bannerLocal" class="font-semibold">--</span>
+                        <div class="flex items-center gap-2 md:gap-2.5 text-blue-100 text-center md:text-left">
+                            <i class="fa-solid fa-location-dot text-fcbcr-accent text-sm md:text-base"></i>
+                            <span id="bannerLocal" class="font-semibold truncate max-w-[200px] md:max-w-none">--</span>
                         </div>
                     </div>
 
@@ -187,52 +195,52 @@
                 <div class="flex flex-col gap-4 justify-between">
                     
                     <!-- Card 1: Equipes Cadastradas -->
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                    <div class="bg-white rounded-xl p-4 md:p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3 md:gap-4">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-base md:text-lg shrink-0">
                                 <i class="fa-solid fa-users"></i>
                             </div>
-                            <div>
-                                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Equipes</p>
-                                <p class="text-3xl font-extrabold text-slate-800">6</p>
-                                <p class="text-xs text-slate-400">Equipes cadastradas</p>
+                            <div class="min-w-0">
+                                <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider">Equipes</p>
+                                <p class="text-2xl md:text-3xl font-extrabold text-slate-800">6</p>
+                                <p class="text-[10px] md:text-xs text-slate-400">Equipes cadastradas</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Card 2: Jogos Realizados -->
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-lg">
+                    <div class="bg-white rounded-xl p-4 md:p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3 md:gap-4">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-base md:text-lg shrink-0">
                                 <i class="fa-solid fa-basketball"></i>
                             </div>
-                            <div>
-                                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Jogos Realizados</p>
-                                <p id="contadorJogosRealizados" class="text-3xl font-extrabold text-slate-800">0 <span class="text-lg font-normal text-slate-400">/ 36</span></p>
-                                <p class="text-xs text-slate-400">Atualizado via sistema</p>
+                            <div class="min-w-0">
+                                <p class="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider">Jogos Realizados</p>
+                                <p id="contadorJogosRealizados" class="text-2xl md:text-3xl font-extrabold text-slate-800">0 <span class="text-base md:text-lg font-normal text-slate-400">/ 36</span></p>
+                                <p class="text-[10px] md:text-xs text-slate-400">Atualizado via sistema</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Card 3: Destaques -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 pb-2">Destaques</p>
+                    <div class="bg-white rounded-xl p-3 md:p-4 border border-slate-200 shadow-sm space-y-2 md:space-y-3">
+                        <p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 pb-2">Destaques</p>
                         
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="bg-slate-50 rounded-lg p-2.5">
-                                <i class="fa-solid fa-user-check text-blue-500 text-sm mb-1"></i>
-                                <p id="totalAtletasCampeonato" class="text-lg font-extrabold text-slate-800 leading-tight">0</p>
-                                <p class="text-[10px] text-slate-500 leading-none">Atletas</p>
+                        <div class="grid grid-cols-3 gap-1.5 md:gap-2 text-center">
+                            <div class="bg-slate-50 rounded-lg p-2 md:p-2.5">
+                                <i class="fa-solid fa-user-check text-blue-500 text-xs md:text-sm mb-1"></i>
+                                <p id="totalAtletasCampeonato" class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">0</p>
+                                <p class="text-[8px] md:text-[10px] text-slate-500 leading-none">Atletas</p>
                             </div>
-                            <div class="bg-slate-50 rounded-lg p-2.5">
-                                <i class="fa-solid fa-star text-yellow-500 text-sm mb-1"></i>
-                                <p id="totalPontosCampeonato" class="text-lg font-extrabold text-slate-800 leading-tight">1.256</p>
-                                <p class="text-[10px] text-slate-500 leading-none">Pontos</p>
+                            <div class="bg-slate-50 rounded-lg p-2 md:p-2.5">
+                                <i class="fa-solid fa-star text-yellow-500 text-xs md:text-sm mb-1"></i>
+                                <p id="totalPontosCampeonato" class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">1.256</p>
+                                <p class="text-[8px] md:text-[10px] text-slate-500 leading-none">Pontos</p>
                             </div>
-                            <div class="bg-slate-50 rounded-lg p-2.5">
-                                <i class="fa-solid fa-chart-simple text-red-500 text-sm mb-1"></i>
-                                <p id="mediaGeralPontos" class="text-lg font-extrabold text-slate-800 leading-tight">69,8</p>
-                                <p class="text-[10px] text-slate-500 leading-none">Média</p>
+                            <div class="bg-slate-50 rounded-lg p-2 md:p-2.5">
+                                <i class="fa-solid fa-chart-simple text-red-500 text-xs md:text-sm mb-1"></i>
+                                <p id="mediaGeralPontos" class="text-base md:text-lg font-extrabold text-slate-800 leading-tight">69,8</p>
+                                <p class="text-[8px] md:text-[10px] text-slate-500 leading-none">Média</p>
                             </div>
                         </div>
                     </div>
@@ -242,65 +250,65 @@
             </div>
 
             <!-- GRID INFERIOR: CLASSIFICAÇÃO + ÚLTIMOS RESULTADOS + TOP CESTINHAS -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
                 
                 <!-- 1. CLASSIFICAÇÃO GERAL (4 colunas) -->
-                <div class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Classificação</h3>
+                <div class="lg:col-span-4 bg-white rounded-2xl p-4 md:p-5 border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                    <div class="flex justify-between items-center mb-3 md:mb-4">
+                        <div class="min-w-0">
+                            <h3 class="text-xs md:text-sm font-extrabold text-slate-800 uppercase tracking-wide truncate">Classificação</h3>
                         </div>
-                        <button onclick="trocarAba('classificacao')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver tudo</button>
+                        <button onclick="trocarAba('classificacao')" class="text-[10px] md:text-xs font-bold text-blue-600 hover:text-blue-800 transition shrink-0 ml-2">Ver tudo</button>
                     </div>
-                    <div class="overflow-x-auto flex-1">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-x-auto flex-1 -mx-4 md:mx-0 px-4 md:px-0">
+                        <table class="w-full text-left border-collapse min-w-[320px]">
                             <thead>
-                                <tr class="border-b border-slate-100 text-slate-400 text-[10px] font-bold uppercase">
-                                    <th class="py-1.5 px-1 text-center w-6"></th>
+                                <tr class="border-b border-slate-100 text-slate-400 text-[9px] md:text-[10px] font-bold uppercase">
+                                    <th class="py-1.5 px-1 text-center w-5 md:w-6"></th>
                                     <th class="py-1.5 px-1 text-left">Equipe</th>
                                     <th class="py-1.5 px-1 text-center">J</th>
                                     <th class="py-1.5 px-1 text-center">V</th>
                                     <th class="py-1.5 px-1 text-center">D</th>
-                                    <th class="py-1.5 px-1.5 text-center font-extrabold text-slate-700">Pts</th>
+                                    <th class="py-1.5 px-1 md:px-1.5 text-center font-extrabold text-slate-700">Pts</th>
                                 </tr>
                             </thead>
-                            <tbody id="corpoClassificacao" class="text-[11px] font-medium text-slate-700 divide-y divide-slate-50">
+                            <tbody id="corpoClassificacao" class="text-[10px] md:text-[11px] font-medium text-slate-700 divide-y divide-slate-50">
                             </tbody>
                         </table>
                     </div>
                 </div>
 
                 <!-- 2. ÚLTIMOS RESULTADOS (5 colunas) -->
-                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Últimos Resultados</h3>
+                <div class="lg:col-span-5 bg-white rounded-2xl p-4 md:p-5 border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                    <div class="flex justify-between items-center mb-3 md:mb-4">
+                        <div class="min-w-0">
+                            <h3 class="text-xs md:text-sm font-extrabold text-slate-800 uppercase tracking-wide truncate">Últimos Resultados</h3>
 
                         </div>
-                        <button onclick="trocarAba('resultados')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver todos</button>
+                        <button onclick="trocarAba('resultados')" class="text-[10px] md:text-xs font-bold text-blue-600 hover:text-blue-800 transition shrink-0 ml-2">Ver todos</button>
                     </div>
-                    <div id="corpoResultados" class="space-y-2 flex-1">
+                    <div id="corpoResultados" class="space-y-2 flex-1 overflow-hidden">
                     </div>
                 </div>
 
                 <!-- 3. TOP CESTINHAS (3 colunas = 25%) -->
-                <div class="lg:col-span-3 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <div>
-                            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">TOP 5 CESTINHAS</h3>
+                <div class="lg:col-span-3 bg-white rounded-2xl p-3 md:p-4 border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                    <div class="flex justify-between items-center mb-2 md:mb-3">
+                        <div class="min-w-0">
+                            <h3 class="text-xs md:text-sm font-extrabold text-slate-800 uppercase tracking-wide truncate">TOP 5 CESTINHAS</h3>
                         </div>
                     </div>
-                    <div id="corpoCestinhas" class="space-y-1.5 flex-1">
+                    <div id="corpoCestinhas" class="space-y-1 md:space-y-1.5 flex-1 overflow-hidden">
                     </div>
                 </div>
 
             </div>
 
             <!-- 4. BLOCO DE PRÓXIMAS PARTIDAS -->
-            <div class="space-y-4">
+            <div class="space-y-3 md:space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Próximas Partidas</h3>
-                    <button onclick="trocarAba('calendario')" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">Ver Calendário Completo →</button>
+                    <h3 class="text-xs md:text-sm font-extrabold text-slate-800 uppercase tracking-wide">Próximas Partidas</h3>
+                    <button onclick="trocarAba('calendario')" class="text-[10px] md:text-xs font-bold text-blue-600 hover:text-blue-800 transition shrink-0 ml-2">Ver Calendário Completo →</button>
                 </div>
 
                 <div id="corpoProximasPartidas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -312,23 +320,23 @@
 
             <!-- ABA: CLASSIFICAÇÃO COMPLETA -->
             <div id="aba-classificacao" class="hidden">
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Classificação Geral</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm overflow-hidden">
+                    <h2 class="text-base md:text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Classificação Geral</h2>
+                    <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                        <table class="w-full text-left border-collapse min-w-[480px]">
                             <thead>
-                                <tr class="border-b border-slate-200 text-slate-400 text-xs font-bold uppercase">
-                                    <th class="py-3 px-3 w-8 text-center"></th>
-                                    <th class="py-3 px-3">Equipes</th>
-                                    <th class="py-3 px-2 text-center">J</th>
-                                    <th class="py-3 px-2 text-center">V</th>
-                                    <th class="py-3 px-2 text-center">D</th>
-                                    <th class="py-3 px-2 text-center">PF</th>
-                                    <th class="py-3 px-2 text-center">PC</th>
-                                    <th class="py-3 px-3 text-center font-extrabold text-slate-700">Pts</th>
+                                <tr class="border-b border-slate-200 text-slate-400 text-[10px] md:text-xs font-bold uppercase">
+                                    <th class="py-3 px-2 md:px-3 w-6 md:w-8 text-center"></th>
+                                    <th class="py-3 px-2 md:px-3">Equipes</th>
+                                    <th class="py-3 px-1 md:px-2 text-center">J</th>
+                                    <th class="py-3 px-1 md:px-2 text-center">V</th>
+                                    <th class="py-3 px-1 md:px-2 text-center">D</th>
+                                    <th class="py-3 px-1 md:px-2 text-center hidden sm:table-cell">PF</th>
+                                    <th class="py-3 px-1 md:px-2 text-center hidden sm:table-cell">PC</th>
+                                    <th class="py-3 px-2 md:px-3 text-center font-extrabold text-slate-700">Pts</th>
                                 </tr>
                             </thead>
-                            <tbody id="corpoClassificacaoFull" class="text-sm font-medium text-slate-700 divide-y divide-slate-100">
+                            <tbody id="corpoClassificacaoFull" class="text-xs md:text-sm font-medium text-slate-700 divide-y divide-slate-100">
                             </tbody>
                         </table>
                     </div>
@@ -337,8 +345,8 @@
 
             <!-- ABA: RESULTADOS COMPLETOS -->
             <div id="aba-resultados" class="hidden">
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Resultados dos Jogos</h2>
+                <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm overflow-hidden">
+                    <h2 class="text-base md:text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Resultados dos Jogos</h2>
                     <div id="corpoResultadosFull" class="space-y-3">
                     </div>
                 </div>
@@ -346,8 +354,8 @@
 
             <!-- ABA: CALENDÁRIO DE JOGOS -->
             <div id="aba-calendario" class="hidden">
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Calendário de Jogos</h2>
+                <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm overflow-hidden">
+                    <h2 class="text-base md:text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Calendário de Jogos</h2>
                     <div id="corpoCalendarioFull" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     </div>
                 </div>
@@ -355,8 +363,8 @@
 
             <!-- ABA: CESTINHAS COMPLETA -->
             <div id="aba-cestinhas" class="hidden">
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h2 class="text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Cestinhas</h2>
+                <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200 shadow-sm overflow-hidden">
+                    <h2 class="text-base md:text-lg font-extrabold text-slate-800 uppercase tracking-wide mb-4">Cestinhas</h2>
                     <div class="mb-4">
                         <input type="text" id="filtroCestinhas" oninput="renderCestinhasFull()" placeholder="Buscar por nome ou time..." class="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 transition">
                     </div>
@@ -369,49 +377,49 @@
     </div>
 
     <!-- MODAL DETALHES DO JOGO (Pontuadores) -->
-    <div id="modalJogoDetalhes" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
-            <div class="flex items-center justify-between p-5 border-b border-slate-200">
-                <div>
-                    <h3 id="modalJogoDetalhesTitulo" class="text-sm font-extrabold text-slate-800"></h3>
-                    <p id="modalJogoDetalhesInfo" class="text-[10px] font-bold text-slate-400 mt-0.5"></p>
+    <div id="modalJogoDetalhes" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 md:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b border-slate-200 shrink-0">
+                <div class="min-w-0 flex-1 mr-2">
+                    <h3 id="modalJogoDetalhesTitulo" class="text-xs md:text-sm font-extrabold text-slate-800 truncate"></h3>
+                    <p id="modalJogoDetalhesInfo" class="text-[9px] md:text-[10px] font-bold text-slate-400 mt-0.5 truncate"></p>
                 </div>
-                <button onclick="fecharModalJogoDetalhes()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                <button onclick="fecharModalJogoDetalhes()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition shrink-0">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
-            <div id="modalJogoDetalhesCorpo" class="overflow-y-auto p-5 space-y-3 flex-1"></div>
+            <div id="modalJogoDetalhesCorpo" class="overflow-y-auto p-4 md:p-5 space-y-3 flex-1"></div>
         </div>
     </div>
 
     <!-- MODAL DETALHES DO JOGADOR -->
-    <div id="modalJogador" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
-            <div class="flex items-center justify-between p-5 border-b border-slate-200">
-                <div>
-                    <h3 id="modalJogadorNome" class="text-lg font-extrabold text-slate-800"></h3>
-                    <p id="modalJogadorTime" class="text-xs font-bold text-blue-600 uppercase"></p>
+    <div id="modalJogador" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 md:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b border-slate-200 shrink-0">
+                <div class="min-w-0 flex-1 mr-2">
+                    <h3 id="modalJogadorNome" class="text-base md:text-lg font-extrabold text-slate-800 truncate"></h3>
+                    <p id="modalJogadorTime" class="text-[10px] md:text-xs font-bold text-blue-600 uppercase truncate"></p>
                 </div>
-                <button onclick="fecharModalJogador()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                <button onclick="fecharModalJogador()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition shrink-0">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
-            <div class="p-5 overflow-y-auto flex-1">
-                <div class="flex items-center gap-4 mb-4 bg-slate-50 rounded-xl p-4">
+            <div class="p-4 md:p-5 overflow-y-auto flex-1">
+                <div class="flex items-center justify-around gap-2 md:gap-4 mb-4 bg-slate-50 rounded-xl p-3 md:p-4">
                     <div class="text-center">
-                        <p id="modalJogadorPontos" class="text-3xl font-black text-blue-600"></p>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold">Pontos Totais</p>
+                        <p id="modalJogadorPontos" class="text-xl md:text-3xl font-black text-blue-600"></p>
+                        <p class="text-[8px] md:text-[10px] text-slate-400 uppercase font-bold">Pontos Totais</p>
                     </div>
                     <div class="text-center">
-                        <p id="modalJogadorJogos" class="text-3xl font-black text-slate-800"></p>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold">Jogos</p>
+                        <p id="modalJogadorJogos" class="text-xl md:text-3xl font-black text-slate-800"></p>
+                        <p class="text-[8px] md:text-[10px] text-slate-400 uppercase font-bold">Jogos</p>
                     </div>
                     <div class="text-center">
-                        <p id="modalJogadorMedia" class="text-3xl font-black text-green-600"></p>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold">Média</p>
+                        <p id="modalJogadorMedia" class="text-xl md:text-3xl font-black text-green-600"></p>
+                        <p class="text-[8px] md:text-[10px] text-slate-400 uppercase font-bold">Média</p>
                     </div>
                 </div>
-                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Desempenho por Jogo</h4>
+                <h4 class="text-[10px] md:text-xs font-bold text-slate-500 uppercase mb-2">Desempenho por Jogo</h4>
                 <div id="modalJogadorDetalhes" class="space-y-2">
                 </div>
             </div>
@@ -541,16 +549,16 @@
 
                 corpoClassificacao.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="py-2.5 px-2 text-center">
-                            <span class="w-6 h-6 rounded-full ${badgeRank} flex items-center justify-center mx-auto">${medal}${i + 1}</span>
+                        <td class="py-2 px-1 text-center">
+                            <span class="w-5 h-5 md:w-6 md:h-6 rounded-full ${badgeRank} flex items-center justify-center mx-auto text-[9px] md:text-[10px]">${medal}${i + 1}</span>
                         </td>
-                        <td class="py-2.5 px-2 font-bold text-slate-800 truncate max-w-[120px]">
-                            ${t.logo ? `<img src="${t.logo}" alt="" class="w-5 h-5 object-contain inline-block mr-1" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">` : ''}<span class="inline"${t.logo ? ' style="display:none"' : ''}>${emoticonsTimes[t.time] || '🏀'}</span> ${t.time}
+                        <td class="py-2 px-1 font-bold text-slate-800 min-w-0">
+                            ${t.logo ? `<img src="${t.logo}" alt="" class="w-4 h-4 md:w-5 md:h-5 object-contain inline-block mr-1 shrink-0" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">` : ''}<span class="inline"${t.logo ? ' style="display:none"' : ''}>${emoticonsTimes[t.time] || '🏀'}</span> <span class="truncate max-w-[100px] md:max-w-[120px] inline-block align-middle">${t.time}</span>
                         </td>
-                        <td class="py-2.5 px-1 text-center text-slate-500">${totalJogos}</td>
-                        <td class="py-2.5 px-1 text-center text-green-600 font-bold">${t.v}</td>
-                        <td class="py-2.5 px-1 text-center text-red-500 font-bold">${t.d}</td>
-                        <td class="py-2.5 px-2 text-center font-black text-blue-600 text-sm">${totalPontos}</td>
+                        <td class="py-2 px-1 text-center text-slate-500">${totalJogos}</td>
+                        <td class="py-2 px-1 text-center text-green-600 font-bold">${t.v}</td>
+                        <td class="py-2 px-1 text-center text-red-500 font-bold">${t.d}</td>
+                        <td class="py-2 px-1 md:px-1.5 text-center font-black text-blue-600 text-xs md:text-sm">${totalPontos}</td>
                     </tr>
                 `;
             });
@@ -589,19 +597,21 @@
                     const destaqueFora = jogo.pontosFora > jogo.pontosCasa ? 'text-green-600' : 'text-slate-500';
 
                     corpoResultados.innerHTML += `
-                        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
-                            <div class="flex flex-col text-slate-400 font-bold shrink-0">
-                                <span>${jogo.data.split('/')[0]}</span>
-                                <span class="text-[10px] font-normal uppercase">MES</span>
-                            </div>
-                            <div class="flex-1 px-4 flex items-center justify-between font-bold text-slate-800">
-                                <span class="truncate">${jogo.casa}</span>
-                                <div class="flex items-center gap-2 bg-white px-2 py-1 rounded shadow-sm mx-2 shrink-0">
-                                    <span class="${destaqueCasa}">${jogo.pontosCasa}</span>
-                                    <span class="text-slate-300 font-normal">x</span>
-                                    <span class="${destaqueFora}">${jogo.pontosFora}</span>
+                        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-100 text-xs overflow-hidden">
+                            <div class="flex items-stretch gap-2">
+                                <div class="flex flex-col text-slate-400 font-bold shrink-0 items-center justify-center w-8">
+                                    <span>${jogo.data.split('/')[0]}</span>
+                                    <span class="text-[8px] font-normal uppercase">MES</span>
                                 </div>
-                                <span class="truncate">${jogo.fora}</span>
+                                <div class="flex-1 min-w-0 flex items-center justify-between gap-1">
+                                    <span class="font-bold text-slate-800 truncate min-w-0 text-right" style="flex:1">${jogo.casa}</span>
+                                    <div class="flex items-center gap-1.5 bg-white px-2 py-1 rounded shadow-sm shrink-0">
+                                        <span class="${destaqueCasa} font-bold">${jogo.pontosCasa}</span>
+                                        <span class="text-slate-300 font-normal">x</span>
+                                        <span class="${destaqueFora} font-bold">${jogo.pontosFora}</span>
+                                    </div>
+                                    <span class="font-bold text-slate-800 truncate min-w-0" style="flex:1">${jogo.fora}</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -625,7 +635,7 @@
                     const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
 
                     corpoProximasPartidas.innerHTML += `
-                        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between gap-4">
+                        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between gap-4 overflow-hidden">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
@@ -638,27 +648,27 @@
                             </div>
 
                             <div class="flex items-center justify-around gap-2">
-                                <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                    <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                    <div class="w-12 h-12 md:w-14 md:h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
                                         <img src="${logoCasa}" alt="${jogo.casa}" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                        <span class="text-2xl" style="display:none">${emoticonsTimes[jogo.casa] || '🏀'}</span>
+                                        <span class="text-xl md:text-2xl" style="display:none">${emoticonsTimes[jogo.casa] || '🏀'}</span>
                                     </div>
-                                    <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                                    <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.casa}</span>
                                 </div>
 
-                                <span class="text-fcbcr-accent font-black italic text-sm">VS</span>
+                                <span class="text-fcbcr-accent font-black italic text-sm shrink-0">VS</span>
 
-                                <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                    <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
+                                <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                    <div class="w-12 h-12 md:w-14 md:h-14 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
                                         <img src="${logoFora}" alt="${jogo.fora}" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                        <span class="text-2xl" style="display:none">${emoticonsTimes[jogo.fora] || '🏀'}</span>
+                                        <span class="text-xl md:text-2xl" style="display:none">${emoticonsTimes[jogo.fora] || '🏀'}</span>
                                     </div>
-                                    <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                                    <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.fora}</span>
                                 </div>
                             </div>
 
-                            <div class="border-t border-slate-50 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
-                                <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            <div class="border-t border-slate-50 pt-2 flex items-center gap-1.5 text-[9px] md:text-[10px] text-slate-400 font-semibold">
+                                <i class="fa-solid fa-location-dot text-blue-500 shrink-0"></i>
                                 <span class="truncate">${jogo.local || 'A definir'}</span>
                             </div>
                         </div>
@@ -750,17 +760,17 @@
                 if (i === 2) badgeRank = 'bg-amber-500 text-white font-black shadow-sm shadow-amber-300';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="py-3 px-3 text-center"><span class="w-7 h-7 rounded-full ${badgeRank} text-xs flex items-center justify-center mx-auto">${i + 1}</span></td>
-                        <td class="py-3 px-3 flex items-center gap-2 font-bold text-slate-800">
-                            ${t.logo ? `<img src="${t.logo}" class="w-6 h-6 object-contain rounded" onerror="this.style.display='none'">` : ''}
-                            <span>${t.time}</span>
+                        <td class="py-2.5 md:py-3 px-2 md:px-3 text-center"><span class="w-6 h-6 md:w-7 md:h-7 rounded-full ${badgeRank} text-[10px] md:text-xs flex items-center justify-center mx-auto">${i + 1}</span></td>
+                        <td class="py-2.5 md:py-3 px-2 md:px-3 flex items-center gap-2 font-bold text-slate-800 min-w-0">
+                            ${t.logo ? `<img src="${t.logo}" class="w-5 h-5 md:w-6 md:h-6 object-contain rounded shrink-0" onerror="this.style.display='none'">` : ''}
+                            <span class="truncate">${t.time}</span>
                         </td>
-                        <td class="py-3 px-2 text-center text-slate-500">${totalJogos}</td>
-                        <td class="py-3 px-2 text-center text-green-600 font-bold">${t.v}</td>
-                        <td class="py-3 px-2 text-center text-red-500 font-bold">${t.d}</td>
-                        <td class="py-3 px-2 text-center text-slate-500">${t.ptsPro || 0}</td>
-                        <td class="py-3 px-2 text-center text-slate-500">${t.ptsContra || 0}</td>
-                        <td class="py-3 px-3 text-center font-black text-blue-600 text-base">${totalPontos}</td>
+                        <td class="py-2.5 md:py-3 px-1 md:px-2 text-center text-slate-500">${totalJogos}</td>
+                        <td class="py-2.5 md:py-3 px-1 md:px-2 text-center text-green-600 font-bold">${t.v}</td>
+                        <td class="py-2.5 md:py-3 px-1 md:px-2 text-center text-red-500 font-bold">${t.d}</td>
+                        <td class="py-2.5 md:py-3 px-1 md:px-2 text-center text-slate-500 hidden sm:table-cell">${t.ptsPro || 0}</td>
+                        <td class="py-2.5 md:py-3 px-1 md:px-2 text-center text-slate-500 hidden sm:table-cell">${t.ptsContra || 0}</td>
+                        <td class="py-2.5 md:py-3 px-2 md:px-3 text-center font-black text-blue-600 text-sm md:text-base">${totalPontos}</td>
                     </tr>
                 `;
             });
@@ -789,7 +799,7 @@
                 const destaqueCasa = jogo.pontosCasa > jogo.pontosFora ? 'text-green-600 font-black' : 'text-slate-600 font-bold';
                 const destaqueFora = jogo.pontosFora > jogo.pontosCasa ? 'text-green-600 font-black' : 'text-slate-600 font-bold';
                 container.innerHTML += `
-                    <div onclick="abrirModalJogoDetalhes(${jogo.id})" class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:bg-green-100 hover:border-green-300 transition">
+                    <div onclick="abrirModalJogoDetalhes(${jogo.id})" class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:bg-green-100 hover:border-green-300 transition overflow-hidden">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
@@ -801,26 +811,26 @@
                             <span class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">Finalizado</span>
                         </div>
                         <div class="flex items-center justify-around gap-2">
-                            <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
-                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
+                            <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
+                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-lg md:text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                                <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.casa}</span>
                             </div>
-                            <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-lg shadow-sm">
-                                <span class="${destaqueCasa} text-xl">${jogo.pontosCasa}</span>
+                            <div class="flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-lg shadow-sm shrink-0">
+                                <span class="${destaqueCasa} text-lg md:text-xl">${jogo.pontosCasa}</span>
                                 <span class="text-slate-300 font-normal">x</span>
-                                <span class="${destaqueFora} text-xl">${jogo.pontosFora}</span>
+                                <span class="${destaqueFora} text-lg md:text-xl">${jogo.pontosFora}</span>
                             </div>
-                            <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
-                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
+                            <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
+                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-lg md:text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                                <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.fora}</span>
                             </div>
                         </div>
                         <div class="border-t border-green-200/50 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
-                            <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            <i class="fa-solid fa-location-dot text-blue-500 shrink-0"></i>
                             <span class="truncate">${jogo.local || 'A definir'}</span>
                         </div>
                     </div>
@@ -850,7 +860,7 @@
                 const logoFora = getLogo(jogo.fora);
 
                 container.innerHTML += `
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3 overflow-hidden">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <div class="bg-blue-600 text-white font-black text-xs px-2.5 py-1.5 rounded flex flex-col items-center leading-none">
@@ -862,22 +872,22 @@
                             <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase">Agendado</span>
                         </div>
                         <div class="flex items-center justify-around gap-2">
-                            <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
-                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
+                            <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
+                                    ${logoCasa ? `<img src="${logoCasa}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-lg md:text-xl">${emoticonsTimes[jogo.casa] || '🏀'}</span>`}
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.casa}</span>
+                                <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.casa}</span>
                             </div>
-                            <span class="text-fcbcr-accent font-black italic text-sm">VS</span>
-                            <div class="flex flex-col items-center gap-1.5 w-1/3">
-                                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden">
-                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
+                            <span class="text-fcbcr-accent font-black italic text-sm shrink-0">VS</span>
+                            <div class="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+                                <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-50 rounded-full flex items-center justify-center p-1.5 border border-slate-200 overflow-hidden shrink-0">
+                                    ${logoFora ? `<img src="${logoFora}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<span class="text-lg md:text-xl">${emoticonsTimes[jogo.fora] || '🏀'}</span>`}
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-700 text-center leading-tight">${jogo.fora}</span>
+                                <span class="text-[9px] md:text-[10px] font-bold text-slate-700 text-center leading-tight truncate w-full">${jogo.fora}</span>
                             </div>
                         </div>
                         <div class="border-t border-slate-100 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
-                            <i class="fa-solid fa-location-dot text-blue-500"></i>
+                            <i class="fa-solid fa-location-dot text-blue-500 shrink-0"></i>
                             <span class="truncate">${jogo.local || 'A definir'}</span>
                         </div>
                     </div>
@@ -967,10 +977,10 @@
             let html = '';
 
             function renderarTime(nomeTime, pontosTime, pontuadores) {
-                let h = '<div class="bg-slate-50 rounded-xl p-3 border border-slate-100">';
-                h += '<div class="flex items-center justify-between mb-2">';
-                h += '<p class="text-xs font-extrabold text-slate-800 uppercase">' + nomeTime + '</p>';
-                h += '<p class="text-[10px] font-bold text-blue-600">' + pontuadores.length + ' pontuador(es) | Total: ' + pontosTime + ' pts</p>';
+                let h = '<div class="bg-slate-50 rounded-xl p-3 border border-slate-100 overflow-hidden">';
+                h += '<div class="flex items-center justify-between mb-2 gap-2">';
+                h += '<p class="text-[10px] md:text-xs font-extrabold text-slate-800 uppercase truncate min-w-0">' + nomeTime + '</p>';
+                h += '<p class="text-[9px] md:text-[10px] font-bold text-blue-600 shrink-0">' + pontuadores.length + ' pontuador(es) | Total: ' + pontosTime + ' pts</p>';
                 h += '</div>';
                 if (pontuadores.length === 0) {
                     h += '<p class="text-[10px] text-slate-400 text-center py-2">Nenhum pontuador registrado</p>';
