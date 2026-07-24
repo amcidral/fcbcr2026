@@ -377,85 +377,39 @@ INSERT INTO profissionais (nome, funcao, categoria, cidade) VALUES
 -- ==========================================
 -- 11. AUTH USERS (Supabase Auth)
 -- ==========================================
--- Crie os 3 usuarios via Dashboard > Authentication > Users:
---   admin@fcbcr.com  / FCBCR2026  (Acesso Total)
---   gestor@fcbcr.com / gestor2026  (Cadastros e Resultados)
---   escala@fcbcr.com / escala2026  (Somente Escalas)
-
--- Usuário admin
-DO $$ BEGIN
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, created_at, updated_at,
-    raw_app_meta_data, raw_user_meta_data
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(), 'authenticated', 'authenticated',
-    'admin@fcbcr.com', crypt('FCBCR2026', gen_salt('bf')),
-    now(), now(), now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"nome":"Administrador","role":"admin"}'
-  );
-  INSERT INTO auth.identities (id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-  SELECT gen_random_uuid(), id, json_build_object('sub', id::text, 'email', email), 'email', now(), now(), now()
-  FROM auth.users WHERE email = 'admin@fcbcr.com'
-    AND NOT EXISTS (SELECT 1 FROM auth.identities WHERE identity_data->>'email' = 'admin@fcbcr.com');
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
-
--- Usuário gestor
-DO $$ BEGIN
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, created_at, updated_at,
-    raw_app_meta_data, raw_user_meta_data
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(), 'authenticated', 'authenticated',
-    'gestor@fcbcr.com', crypt('gestor2026', gen_salt('bf')),
-    now(), now(), now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"nome":"Gestor","role":"gestor"}'
-  );
-  INSERT INTO auth.identities (id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-  SELECT gen_random_uuid(), id, json_build_object('sub', id::text, 'email', email), 'email', now(), now(), now()
-  FROM auth.users WHERE email = 'gestor@fcbcr.com'
-    AND NOT EXISTS (SELECT 1 FROM auth.identities WHERE identity_data->>'email' = 'gestor@fcbcr.com');
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
-
--- Usuário escalador
-DO $$ BEGIN
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, created_at, updated_at,
-    raw_app_meta_data, raw_user_meta_data
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(), 'authenticated', 'authenticated',
-    'escala@fcbcr.com', crypt('escala2026', gen_salt('bf')),
-    now(), now(), now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"nome":"Escalador","role":"escalador"}'
-  );
-  INSERT INTO auth.identities (id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-  SELECT gen_random_uuid(), id, json_build_object('sub', id::text, 'email', email), 'email', now(), now(), now()
-  FROM auth.users WHERE email = 'escala@fcbcr.com'
-    AND NOT EXISTS (SELECT 1 FROM auth.identities WHERE identity_data->>'email' = 'escala@fcbcr.com');
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
+-- IMPORTANTE: NUNCA coloque senhas em arquivos versionados!
+-- Crie os usuarios via Supabase Dashboard > Authentication > Users:
+--
+--   1. admin@fcbcr.com   -> Acesso Total (role: admin)
+--   2. gestor@fcbcr.com  -> Cadastros e Resultados (role: gestor)
+--   3. escala@fcbcr.com  -> Somente Escalas (role: escalador)
+--
+-- Depois de criar cada usuario no Dashboard, execute os inserts da
+-- secao 12 (PROFILES) para vincular o papel (role) de cada um.
 
 -- ==========================================
 -- 12. PROFILES
 -- ==========================================
-DO $$ BEGIN
-  INSERT INTO profiles (id, nome, role)
-  SELECT id, 'Administrador', 'admin' FROM auth.users WHERE email = 'admin@fcbcr.com';
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
-
-DO $$ BEGIN
-  INSERT INTO profiles (id, nome, role)
-  SELECT id, 'Gestor', 'gestor' FROM auth.users WHERE email = 'gestor@fcbcr.com';
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
-
-DO $$ BEGIN
-  INSERT INTO profiles (id, nome, role)
-  SELECT id, 'Escalador', 'escalador' FROM auth.users WHERE email = 'escala@fcbcr.com';
-EXCEPTION WHEN OTHERS THEN NULL; END $$;
+-- Execute estes inserts DEPOIS de criar os usuarios no Dashboard
+-- e substitua os UUIDs pelos IDs reais de cada usuario.
+--
+-- Exemplo para descobrir o UUID de um usuario:
+--   SELECT id FROM auth.users WHERE email = 'admin@fcbcr.com';
+--
+-- DO $$ BEGIN
+--   INSERT INTO profiles (id, nome, role)
+--   VALUES ('UUID_DO_ADMIN', 'Administrador', 'admin')
+--   ON CONFLICT (id) DO NOTHING;
+-- EXCEPTION WHEN OTHERS THEN NULL; END $$;
+--
+-- DO $$ BEGIN
+--   INSERT INTO profiles (id, nome, role)
+--   VALUES ('UUID_DO_GESTOR', 'Gestor', 'gestor')
+--   ON CONFLICT (id) DO NOTHING;
+-- EXCEPTION WHEN OTHERS THEN NULL; END $$;
+--
+-- DO $$ BEGIN
+--   INSERT INTO profiles (id, nome, role)
+--   VALUES ('UUID_DO_ESCALADOR', 'Escalador', 'escalador')
+--   ON CONFLICT (id) DO NOTHING;
+-- EXCEPTION WHEN OTHERS THEN NULL; END $$;
