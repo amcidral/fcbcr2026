@@ -1639,7 +1639,7 @@
 
             if (jogoSendoEditadoId && jogoIndex !== -1 && (dadosAntigosCasa.length > 0 || dadosAntigosFora.length > 0)) {
                 [...dadosAntigosCasa, ...dadosAntigosFora].forEach(antigo => {
-                    const jogador = artilharia.find(j => j.id === antigo.id);
+                    const jogador = artilharia.find(j => j.atleta_id === antigo.id);
                     if (jogador) {
                         jogador.pontos -= antigo.pontosNovos;
                         if (jogador.jogos) {
@@ -1647,21 +1647,21 @@
                         }
                     }
                 });
-                artilharia.filter(j => j.pontos <= 0).forEach(j => idsParaExcluir.push(j.id));
+                artilharia.filter(j => j.pontos <= 0).forEach(j => idsParaExcluir.push(j.atleta_id));
                 artilharia = artilharia.filter(j => j.pontos > 0);
             }
 
             const jogoDataAtual = jogoIndex !== -1 ? jogos[jogoIndex].data : '';
 
             todosNovosPontos.forEach(novo => {
-                const jogadorExistente = artilharia.find(j => j.id === novo.id);
+                const jogadorExistente = artilharia.find(j => j.atleta_id === novo.id);
                 if (jogadorExistente) {
                     jogadorExistente.pontos += novo.pontosNovos;
                     jogadorExistente.jogos = jogadorExistente.jogos || [];
                     jogadorExistente.jogos.push({ jogoId: jogoSendoEditadoId, adversario: novo.time === casa ? fora : casa, data: jogoDataAtual, pontos: novo.pontosNovos });
                 } else {
                     artilharia.push({
-                        id: novo.id,
+                        atleta_id: novo.id,
                         nome: novo.nome,
                         time: novo.time,
                         classe: novo.classe,

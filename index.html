@@ -696,6 +696,7 @@
                 if (index === 0) badgeRank = 'bg-yellow-400 text-slate-900';
                 if (index === 1) badgeRank = 'bg-slate-300 text-slate-900';
                 if (index === 2) badgeRank = 'bg-amber-600 text-white';
+                const jogosCount = (atleta.jogos || []).filter(j => j.pontos > 0).length;
 
                 corpoCestinhas.innerHTML += `
                     <div class="flex items-center justify-between p-2 bg-slate-50/55 rounded-lg border border-slate-100 hover:bg-slate-50 transition">
@@ -707,8 +708,8 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xs font-black text-slate-800">${atleta.pontos}</p>
-                            <p class="text-[8px] text-slate-400 uppercase font-bold">Pts</p>
+                            <p class="text-xs font-black text-slate-800">${atleta.pontos} pts</p>
+                            <p class="text-[8px] text-slate-400 uppercase font-bold">${jogosCount} jogo${jogosCount !== 1 ? 's' : ''}</p>
                         </div>
                     </div>
                 `;
@@ -938,18 +939,20 @@
                 if (index === 0) badgeRank = 'bg-yellow-400 text-slate-900';
                 if (index === 1) badgeRank = 'bg-slate-300 text-slate-900';
                 if (index === 2) badgeRank = 'bg-amber-600 text-white';
+                const jogosCount = (atleta.jogos || []).filter(j => j.pontos > 0).length;
+                const media = jogosCount > 0 ? (atleta.pontos / jogosCount).toFixed(1) : '0.0';
                 container.innerHTML += `
                     <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
                         <div class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-full ${badgeRank} font-extrabold text-sm flex items-center justify-center">${index + 1}</span>
                             <div>
                                 <p class="text-sm font-bold text-slate-800 cursor-pointer hover:text-blue-600 transition" onclick="abrirModalJogador(${atleta.id})">${atleta.nome}</p>
-                                <p class="text-xs font-bold text-blue-600 uppercase mt-0.5">${atleta.time}</p>
+                                <p class="text-[10px] font-bold text-blue-600 uppercase mt-0.5">${atleta.time}${atleta.classe ? ' — ' + atleta.classe : ''}</p>
                             </div>
                         </div>
                         <div class="text-right">
                             <p class="text-lg font-black text-slate-800">${atleta.pontos}</p>
-                            <p class="text-[10px] text-slate-400 uppercase font-bold">Pontos</p>
+                            <p class="text-[9px] text-slate-400 uppercase font-bold">${jogosCount} jogo${jogosCount !== 1 ? 's' : ''} · Média ${media}</p>
                         </div>
                     </div>
                 `;
@@ -1037,22 +1040,44 @@
             document.getElementById('modalJogadorTime').innerText = atleta.time + (classeLabel ? ' — ' + classeLabel : '');
             document.getElementById('modalJogadorPontos').innerText = atleta.pontos;
 
+            // Usar array jogos da artilharia (já calculado no salvamento da sumula)
+            const jogosArtilharia = atleta.jogos || [];
+            // Complementar com detalhes dos jogos publicados
             const todosJogos = _dados.jogos;
-            const publicados = todosJogos.filter(j => j.status === 'Publicado');
-            const jogosAtleta = [];
-            publicados.forEach(jogo => {
-                const ptsCasa = jogo.pontosAtletasCasa || [];
-                const ptsFora = jogo.pontosAtletasFora || [];
-                const ptsEsteJogo = [...ptsCasa, ...ptsFora].find(p => p.id === id);
-                if (ptsEsteJogo) {
-                    jogosAtleta.push({
-                        jogoId: jogo.id,
-                        timeDoAtleta: ptsEsteJogo.time,
-                        adversario: ptsEsteJogo.time === jogo.casa ? jogo.fora : jogo.casa,
-                        data: jogo.data,
-                        pontos: ptsEsteJogo.pontosNovos
-                    });
+            const jogosMap = {};
+            todosJogos.forEach(j => { jogosMap[j.id] = j; });
+
+            const jogosAtleta = jogosArtilharia.map(ja => {
+                const jogo = jogosMap[ja.jogoId];
+                let timeDoAtleta = '';
+                let adversario = ja.adversario || '';
+                if (jogo) {
+                    const ptsCasa = jogo.pontosAtletasCasa || [];
+                    const ptsFora = jogo.pontosAtletasFora || [];
+                    const ptsEsteJogo = [...ptsCasa, ...ptsFora].find(p => p.id === atleta.atleta_id);
+                    if (ptsEsteJogo) {
+                        timeDoAtleta = ptsEsteJogo.time;
+                        adversario = ptsEsteJogo.time === jogo.casa ? jogo.fora : jogo.casa;
+                    } else {
+                        timeDoAtleta = atleta.time;
+                    }
+                } else {
+                    timeDoAtleta = atleta.time;
                 }
+                return {
+                    jogoId: ja.jogoId,
+                    timeDoAtleta: timeDoAtleta,
+                    adversario: adversario,
+                    data: ja.data || (jogo ? jogo.data : ''),
+                    pontos: ja.pontos
+                };
+            }).filter(j => j.pontos > 0);
+
+            // Ordenar por data (mais recente primeiro)
+            jogosAtleta.sort((a, b) => {
+                const [dA, mA] = (a.data || '01/01').split('/');
+                const [dB, mB] = (b.data || '01/01').split('/');
+                return new Date(2026, parseInt(mA) - 1, parseInt(dA)) - new Date(2026, parseInt(mB) - 1, parseInt(dB));
             });
 
             document.getElementById('modalJogadorJogos').innerText = jogosAtleta.length;
@@ -1074,7 +1099,7 @@
                                     <span class="text-[8px] font-normal mt-0.5">${partesData[1] || ''}</span>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-bold text-slate-700">${j.timeDoAtleta} vs ${j.adversario}</p>
+                                    <p class="text-xs font-bold text-slate-700">${j.timeDoAtleta || atleta.time} vs ${j.adversario}</p>
                                 </div>
                             </div>
                             <div class="text-right">
