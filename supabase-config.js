@@ -2,7 +2,7 @@
 // FCBCR 2026 — Configuração Backend Seguro + Helpers de Dados
 // ============================================================
 
-const _BACKEND_URL = 'https://fcbcr-backend.onrender.com';
+const _BACKEND_URL = 'https://fcbcr-backend-production.up.railway.app';
 
 function obterToken() {
   return localStorage.getItem('auth_token');
