@@ -870,6 +870,15 @@
                 container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhum jogo agendado.</p>`;
                 return;
             }
+
+            proximos.sort((a, b) => {
+                const [dA, mA] = (a.data || '01/01').split('/');
+                const [dB, mB] = (b.data || '01/01').split('/');
+                const dataA = new Date(2026, parseInt(mA) - 1, parseInt(dA));
+                const dataB = new Date(2026, parseInt(mB) - 1, parseInt(dB));
+                if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
+                return (a.hora || '').localeCompare(b.hora || '');
+            });
             const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
             proximos.forEach((jogo, index) => {
                 const partesData = jogo.data.split('/');
