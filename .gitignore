@@ -1,7 +1,46 @@
-# OS files
+# ============================================================
+# SEGURANÇA - NUNCA ENVIAR
+# ============================================================
+
+# Backend (já está no Render)
+backend/
+
+# Backups sensíveis
+backup_supabase_2026.json
+backup_supabase_2026.sql
+backup_supabase_schema.sql
+
+# SQL de migração (contém estrutura)
+migration.sql
+migracao-transporte.sql
+rls-por-role.sql
+
+# Chaves e credenciais
+.env
+.env.local
+
+# Scripts locais (PowerShell)
+*.ps1
+
+# Scripts Python locais
+*.py
+
+# Documentação interna
+*.md
+*.txt
+
+# Arquivo antigo
+supabase-config-new.js
+
+# ============================================================
+# GIT
+# ============================================================
+.git/
+
+# ============================================================
+# OS / EDITOR
+# ============================================================
 .DS_Store
 Thumbs.db
-
-# Editor
 .vscode/
 .idea/

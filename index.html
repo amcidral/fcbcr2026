@@ -592,16 +592,26 @@
             if (publicados.length === 0) {
                 corpoResultados.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum resultado de jogo publicado ainda.</p>`;
             } else {
-                publicados.slice(0, 4).forEach(jogo => {
+                const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+                const publicadosOrdenados = [...publicados].sort((a, b) => {
+                    const [dA, mA] = a.data.split('/');
+                    const [dB, mB] = b.data.split('/');
+                    const dataA = new Date(2026, parseInt(mA) - 1, parseInt(dA));
+                    const dataB = new Date(2026, parseInt(mB) - 1, parseInt(dB));
+                    return dataB - dataA;
+                });
+                publicadosOrdenados.slice(0, 4).forEach(jogo => {
                     const destaqueCasa = jogo.pontosCasa > jogo.pontosFora ? 'text-green-600' : 'text-slate-500';
                     const destaqueFora = jogo.pontosFora > jogo.pontosCasa ? 'text-green-600' : 'text-slate-500';
+                    const partesData = jogo.data.split('/');
+                    const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
 
                     corpoResultados.innerHTML += `
                         <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-100 text-xs overflow-hidden">
                             <div class="flex items-stretch gap-2">
                                 <div class="flex flex-col text-slate-400 font-bold shrink-0 items-center justify-center w-8">
-                                    <span>${jogo.data.split('/')[0]}</span>
-                                    <span class="text-[8px] font-normal uppercase">MES</span>
+                                    <span>${partesData[0]}</span>
+                                    <span class="text-[8px] font-normal uppercase">${mesLabel}</span>
                                 </div>
                                 <div class="flex-1 min-w-0 flex items-center justify-between gap-1">
                                     <span class="font-bold text-slate-800 truncate min-w-0 text-right" style="flex:1">${jogo.casa}</span>
@@ -777,21 +787,28 @@
         }
 
         function renderResultadosFull() {
-            const jogos = _dados.jogos;
-            const classificacao = _dados.classificacao;
-            const container = document.getElementById('corpoResultadosFull');
-            container.innerHTML = '';
-            const getLogo = (nome) => {
-                const cl = classificacao.find(t => t.time === nome);
-                return cl && cl.logo ? cl.logo : '';
-            };
-            const publicados = jogos.filter(j => j.status === 'Publicado');
-            if (publicados.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhum resultado publicado ainda.</p>`;
-                return;
-            }
-            const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-            publicados.forEach(jogo => {
+             const jogos = _dados.jogos;
+             const classificacao = _dados.classificacao;
+             const container = document.getElementById('corpoResultadosFull');
+             container.innerHTML = '';
+             const getLogo = (nome) => {
+                 const cl = classificacao.find(t => t.time === nome);
+                 return cl && cl.logo ? cl.logo : '';
+             };
+             const publicados = jogos.filter(j => j.status === 'Publicado');
+             if (publicados.length === 0) {
+                 container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhum resultado publicado ainda.</p>`;
+                 return;
+             }
+             const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+             const publicadosOrdenados = [...publicados].sort((a, b) => {
+                 const [dA, mA] = a.data.split('/');
+                 const [dB, mB] = b.data.split('/');
+                 const dataA = new Date(2026, parseInt(mA) - 1, parseInt(dA));
+                 const dataB = new Date(2026, parseInt(mB) - 1, parseInt(dB));
+                 return dataB - dataA;
+             });
+             publicadosOrdenados.forEach(jogo => {
                 const partesData = jogo.data.split('/');
                 const mesLabel = meses[parseInt(partesData[1]) - 1] || '';
                 const logoCasa = getLogo(jogo.casa);
