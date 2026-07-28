@@ -2993,8 +2993,7 @@
             const classificacao = await carregarClassificacao();
             const timeCasa = jogo ? classificacao.find(t => t.time === jogo.casa) : null;
 
-            let localComparacao = (jogo && jogo.local) || (timeCasa ? timeCasa.cidade : '');
-            localComparacao = localComparacao.trim().toUpperCase().replace(/[´`^~]/g, '');
+            let localComparacao = ((jogo && jogo.local) || (timeCasa ? timeCasa.cidade : '') || '').trim().toUpperCase().replace(/[´`^~]/g, '');
 
             const escalas = await carregarEscalas();
             const escala = escalas.find(e => e.jogo_id === jogoId);

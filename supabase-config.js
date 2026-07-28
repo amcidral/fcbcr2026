@@ -106,7 +106,7 @@ async function carregarClassificacao() {
   try {
     const [classResult, equipesResult] = await Promise.all([
       _supabase.from('classificacao').select('*').order('pts', { ascending: false }),
-      _supabase.from('equipes').select('id, nome, logo')
+      _supabase.from('equipes').select('id, nome, logo, cidade')
     ]);
 
     if (classResult.error) throw classResult.error;
@@ -121,6 +121,7 @@ async function carregarClassificacao() {
         equipe_id: c.equipe_id,
         time: eq.nome || 'Desconhecido',
         logo: eq.logo || '',
+        cidade: eq.cidade || '',
         v: c.v,
         d: c.d,
         ptsPro: c.pts_pro,
