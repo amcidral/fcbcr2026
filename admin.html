@@ -1734,6 +1734,15 @@
                 return;
             }
 
+            jogosFiltrados.sort((a, b) => {
+                const [dA, mA] = (a.data || '01/01').split('/');
+                const [dB, mB] = (b.data || '01/01').split('/');
+                const dataA = new Date(2026, parseInt(mA) - 1, parseInt(dA));
+                const dataB = new Date(2026, parseInt(mB) - 1, parseInt(dB));
+                if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
+                return (a.hora || '').localeCompare(b.hora || '');
+            });
+
             jogosFiltrados.forEach(jogo => {
                 const placar = (jogo.pontosCasa !== null && jogo.pontosFora !== null)
                     ? `${jogo.pontosCasa} × ${jogo.pontosFora}`
