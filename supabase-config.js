@@ -1,8 +1,16 @@
 ﻿// ============================================================
-// FCBCR 2026 — Configuração Backend Seguro + Helpers de Dados
+// FCBCR 2026 — Supabase Direto (leituras) + Backend (admin/escritas)
 // ============================================================
 
+const _SUPABASE_URL = 'https://xunafmfsuqvcgvyettzs.supabase.co';
+const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1bmFmbWZzdXF2Y2d2eWV0dHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzM1NzUsImV4cCI6MjEwMDA0OTU3NX0.cC7zqhdlAHfnuWlWtq9BaIxj6tjPjjAixb1aJg6d1Bg';
 const _BACKEND_URL = 'https://fcbcr-backend-production.up.railway.app';
+
+const _supabase = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 function obterToken() {
   return localStorage.getItem('auth_token');
@@ -33,12 +41,17 @@ function _limparCache(chave) {
   else { Object.keys(_cache).forEach(k => delete _cache[k]); }
 }
 
+// ============================================================
+// LEITURAS — Direto no Supabase (rápido)
+// ============================================================
+
 async function carregarEquipes() {
   if (_cache.equipes) return _cache.equipes;
   try {
-    const { dados } = await fazerRequisicao('/api/dados/equipes');
-    _cache.equipes = dados;
-    return dados;
+    const { data, error } = await _supabase.from('equipes').select('*').order('nome');
+    if (error) throw error;
+    _cache.equipes = data;
+    return data;
   } catch (e) {
     console.error('Erro ao carregar equipes:', e);
     return [];
@@ -59,12 +72,13 @@ async function getEquipeNome(id) {
 
 async function carregarJogos() {
   try {
-    const { dados } = await fazerRequisicao('/api/dados/jogos');
+    const { data, error } = await _supabase.from('jogos').select('*').order('data', { ascending: false });
+    if (error) throw error;
     const equipes = await carregarEquipes();
     const mapa = {};
     equipes.forEach(e => { mapa[e.id] = e; });
 
-    return dados.map(j => {
+    return data.map(j => {
       const mandante = mapa[j.mandante_id] || {};
       const visitante = mapa[j.visitante_id] || {};
       return {
@@ -87,6 +101,128 @@ async function carregarJogos() {
     return [];
   }
 }
+
+async function carregarClassificacao() {
+  try {
+    const [classResult, equipesResult] = await Promise.all([
+      _supabase.from('classificacao').select('*').order('pts', { ascending: false }),
+      _supabase.from('equipes').select('id, nome, logo')
+    ]);
+
+    if (classResult.error) throw classResult.error;
+
+    const equipesMap = {};
+    (equipesResult.data || []).forEach(e => { equipesMap[e.id] = e; });
+
+    return (classResult.data || []).map(c => {
+      const eq = equipesMap[c.equipe_id] || {};
+      return {
+        id: c.id,
+        equipe_id: c.equipe_id,
+        time: eq.nome || 'Desconhecido',
+        logo: eq.logo || '',
+        v: c.v,
+        d: c.d,
+        ptsPro: c.pts_pro,
+        ptsContra: c.pts_contra,
+        pts: c.pts
+      };
+    });
+  } catch (e) {
+    console.error('Erro ao carregar classificação:', e);
+    return [];
+  }
+}
+
+async function carregarAtletasPorEquipe() {
+  try {
+    const { data, error } = await _supabase.from('atletas').select('*').order('nome');
+    if (error) throw error;
+    const equipes = await carregarEquipes();
+    const mapa = {};
+    equipes.forEach(e => { mapa[e.id] = e.nome; });
+
+    const resultado = {};
+    data.forEach(a => {
+      const nomeEquipe = mapa[a.equipe_id] || 'Sem equipe';
+      if (!resultado[nomeEquipe]) resultado[nomeEquipe] = [];
+      resultado[nomeEquipe].push({
+        id: a.id,
+        nome: a.nome,
+        classe: a.classe || '',
+        camisa: a.camisa,
+        idade: a.idade
+      });
+    });
+
+    return resultado;
+  } catch (e) {
+    console.error('Erro ao carregar atletas:', e);
+    return {};
+  }
+}
+
+async function carregarArtilharia() {
+  try {
+    const [artResult, atletasResult, equipesResult] = await Promise.all([
+      _supabase.from('artilharia').select('*').order('pontos', { ascending: false }),
+      _supabase.from('atletas').select('id, nome, classe, equipe_id'),
+      _supabase.from('equipes').select('id, nome')
+    ]);
+
+    if (artResult.error) throw artResult.error;
+
+    const atletasMap = {};
+    (atletasResult.data || []).forEach(a => { atletasMap[a.id] = a; });
+    const equipesMap = {};
+    (equipesResult.data || []).forEach(e => { equipesMap[e.id] = e; });
+
+    return (artResult.data || []).map(a => {
+      const atleta = atletasMap[a.atleta_id] || {};
+      const equipe = atletasMap[a.atleta_id] ? equipesMap[atleta.equipe_id] : {};
+      return {
+        id: a.id,
+        atleta_id: a.atleta_id,
+        nome: atleta.nome || 'Desconhecido',
+        classe: atleta.classe || '',
+        time: equipe.nome || 'Sem equipe',
+        pontos: a.pontos,
+        jogos: a.jogos || []
+      };
+    });
+  } catch (e) {
+    console.error('Erro ao carregar artilharia:', e);
+    return [];
+  }
+}
+
+async function carregarProfissionais() {
+  if (_cache.profissionais) return _cache.profissionais;
+  try {
+    const { data, error } = await _supabase.from('profissionais').select('*').order('nome');
+    if (error) throw error;
+    _cache.profissionais = data;
+    return data;
+  } catch (e) {
+    console.error('Erro ao carregar profissionais:', e);
+    return [];
+  }
+}
+
+async function carregarEscalas() {
+  try {
+    const { data, error } = await _supabase.from('escalas_jogos').select('*');
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Erro ao carregar escalas:', e);
+    return [];
+  }
+}
+
+// ============================================================
+// ESCRITAS — Via Backend (com auth JWT)
+// ============================================================
 
 async function salvarJogo(jogo) {
   const mandanteId = await getEquipeId(jogo.casa);
@@ -140,16 +276,6 @@ async function excluirJogo(jogoId) {
   _limparCache('jogos');
 }
 
-async function carregarClassificacao() {
-  try {
-    const { dados } = await fazerRequisicao('/api/dados/classificacao');
-    return dados;
-  } catch (e) {
-    console.error('Erro ao carregar classificação:', e);
-    return [];
-  }
-}
-
 async function salvarClassificacao(classificacao) {
   for (const c of classificacao) {
     const equipeId = await getEquipeId(c.time);
@@ -168,33 +294,6 @@ async function salvarClassificacao(classificacao) {
     });
   }
   _limparCache('classificacao');
-}
-
-async function carregarAtletasPorEquipe() {
-  try {
-    const { dados } = await fazerRequisicao('/api/dados/atletas');
-    const equipes = await carregarEquipes();
-    const mapa = {};
-    equipes.forEach(e => { mapa[e.id] = e.nome; });
-
-    const resultado = {};
-    dados.forEach(a => {
-      const nomeEquipe = mapa[a.equipe_id] || 'Sem equipe';
-      if (!resultado[nomeEquipe]) resultado[nomeEquipe] = [];
-      resultado[nomeEquipe].push({
-        id: a.id,
-        nome: a.nome,
-        classe: a.classe || '',
-        camisa: a.camisa,
-        idade: a.idade
-      });
-    });
-
-    return resultado;
-  } catch (e) {
-    console.error('Erro ao carregar atletas:', e);
-    return {};
-  }
 }
 
 async function salvarAtleta(atleta, equipeNome) {
@@ -241,28 +340,6 @@ async function excluirAtleta(atletaId) {
   _limparCache('atletas');
 }
 
-async function carregarArtilharia() {
-  try {
-    const { dados } = await fazerRequisicao('/api/dados/artilharia');
-    return dados;
-  } catch (e) {
-    console.error('Erro ao carregar artilharia:', e);
-    return [];
-  }
-}
-
-async function carregarProfissionais() {
-  if (_cache.profissionais) return _cache.profissionais;
-  try {
-    const { dados } = await fazerRequisicao('/api/dados/profissionais');
-    _cache.profissionais = dados;
-    return dados;
-  } catch (e) {
-    console.error('Erro ao carregar profissionais:', e);
-    return [];
-  }
-}
-
 async function salvarProfissional(prof) {
   const registro = {
     nome: prof.nome,
@@ -303,16 +380,6 @@ async function excluirProfissional(id) {
     method: 'DELETE'
   });
   _limparCache('profissionais');
-}
-
-async function carregarEscalas() {
-  try {
-    const { dados } = await fazerRequisicao('/api/dados/escalas');
-    return dados;
-  } catch (e) {
-    console.error('Erro ao carregar escalas:', e);
-    return [];
-  }
 }
 
 async function salvarEscalaJogo(escala) {
