@@ -1179,7 +1179,12 @@
         }
 
         function fazerLogout() {
-            _supabase.auth.signOut().then(() => location.reload());
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('usuario_id');
+            localStorage.removeItem('usuario_nome');
+            localStorage.removeItem('usuario_role');
+            localStorage.removeItem('usuario_email');
+            location.reload();
         }
 
         async function getUsuarioLogado() {
