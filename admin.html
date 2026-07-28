@@ -2591,8 +2591,8 @@
                     const [d2, m2] = b.jogo.data.split('/');
                     const dataA = new Date(2026, parseInt(m1) - 1, parseInt(d1));
                     const dataB = new Date(2026, parseInt(m2) - 1, parseInt(d2));
-                    if (dataA - dataB !== 0) return dataA - dataB;
-                    return (a.jogo.hora || '').localeCompare(b.jogo.hora || '');
+                    if (dataB - dataA !== 0) return dataB - dataA;
+                    return (b.jogo.hora || '').localeCompare(a.jogo.hora || '');
                 });
 
                 if (filtroData) {
