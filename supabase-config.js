@@ -1,16 +1,3 @@
-﻿// ============================================================
-// FCBCR 2026 — Supabase Direto (leituras) + Backend (admin/escritas)
-// ============================================================
-
-const _SUPABASE_URL = 'https://xunafmfsuqvcgvyettzs.supabase.co';
-const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1bmFmbWZzdXF2Y2d2eWV0dHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzM1NzUsImV4cCI6MjEwMDA0OTU3NX0.cC7zqhdlAHfnuWlWtq9BaIxj6tjPjjAixb1aJg6d1Bg';
-const _BACKEND_URL = 'https://fcbcr-backend-production.up.railway.app';
-
-const _supabase = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
-
-// ============================================================
-// HELPERS
-// ============================================================
 
 function obterToken() {
   return localStorage.getItem('auth_token');
