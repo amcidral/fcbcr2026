@@ -453,3 +453,13 @@ async function contarAtletas() {
     return 0;
   }
 }
+
+window._dbRefs = {
+  salvarAtleta,
+  atualizarAtleta,
+  excluirAtleta,
+  salvarEscalaJogo,
+  salvarProfissional,
+  excluirProfissional,
+  excluirEquipe
+};
