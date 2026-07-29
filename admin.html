@@ -1747,8 +1747,8 @@
             const ptCasa = parseInt(document.getElementById('pontosCasa').value) || 0;
             const ptFora = parseInt(document.getElementById('pontosFora').value) || 0;
 
-            const sumulaInput = document.getElementById('sumulaPdfInput');
-            const temNovoPdf = sumulaInput && sumulaInput.files && sumulaInput.files[0];
+            const sumulaFileInput = document.getElementById('sumulaPdfInput');
+            const temNovoPdf = sumulaFileInput && sumulaFileInput.files && sumulaFileInput.files[0];
             const temPdfExistente = document.getElementById('sumulaPdfStatus').innerHTML.trim() !== '';
             if (!temNovoPdf && !temPdfExistente) {
                 alert('É necessário anexar a súmula em PDF antes de publicar!');
@@ -1798,12 +1798,11 @@
 
             // Upload da sumula PDF (se selecionada) direto no Supabase Storage
             let sumulaPdfUrl = '';
-            const sumulaInput = document.getElementById('sumulaPdfInput');
-            if (sumulaInput && sumulaInput.files && sumulaInput.files[0]) {
+            if (sumulaFileInput && sumulaFileInput.files && sumulaFileInput.files[0]) {
                 document.getElementById('btnPublicarSumula').disabled = true;
                 document.getElementById('btnPublicarSumula').textContent = 'Enviando PDF...';
                 try {
-                    const file = sumulaInput.files[0];
+                    const file = sumulaFileInput.files[0];
                     const filePath = `sumulas/${jogoSendoEditadoId}.pdf`;
                     const { error: uploadError } = await _supabase.storage.from('sumulas').upload(filePath, file, { upsert: true });
                     if (uploadError) throw uploadError;
