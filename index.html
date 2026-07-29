@@ -850,6 +850,7 @@
                         <div class="border-t border-green-200/50 pt-2 flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
                             <i class="fa-solid fa-location-dot text-blue-500 shrink-0"></i>
                             <span class="truncate">${jogo.local || 'A definir'}</span>
+                            ${jogo.sumulaPdfUrl ? '<i class="fa-solid fa-file-pdf text-red-400 ml-auto" title="Sumula disponivel"></i>' : ''}
                         </div>
                     </div>
                 `;
@@ -1030,6 +1031,18 @@
 
             html += renderarTime(jogo.casa, totalCasa, pontuadoresCasa);
             html += renderarTime(jogo.fora, totalFora, pontuadoresFora);
+
+            if (jogo.sumulaPdfUrl) {
+                html += `
+                    <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <a href="${jogo.sumulaPdfUrl}" target="_blank" class="flex items-center gap-2 text-red-700 hover:text-red-900 transition">
+                            <i class="fa-solid fa-file-pdf text-lg"></i>
+                            <span class="text-[11px] font-extrabold uppercase">Ver Súmula Oficial</span>
+                            <i class="fa-solid fa-external-link-alt text-[9px] ml-auto"></i>
+                        </a>
+                    </div>
+                `;
+            }
 
             corpo.innerHTML = html;
             document.getElementById('modalJogoDetalhes').classList.remove('hidden');

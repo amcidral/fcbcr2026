@@ -80,7 +80,8 @@ async function carregarJogos() {
         rodada: j.rodada,
         local: j.local_jogo,
         pontosAtletasCasa: j.pontos_atletas_casa || [],
-        pontosAtletasFora: j.pontos_atletas_fora || []
+        pontosAtletasFora: j.pontos_atletas_fora || [],
+        sumulaPdfUrl: j.sumula_pdf_url || ''
       };
     });
   } catch (e) {
@@ -249,6 +250,7 @@ async function atualizarJogo(jogoId, campos) {
   if (campos.local !== undefined) dbCampos.local_jogo = campos.local;
   if (campos.pontosAtletasCasa !== undefined) dbCampos.pontos_atletas_casa = campos.pontosAtletasCasa;
   if (campos.pontosAtletasFora !== undefined) dbCampos.pontos_atletas_fora = campos.pontosAtletasFora;
+  if (campos.sumulaPdfUrl !== undefined) dbCampos.sumula_pdf_url = campos.sumulaPdfUrl;
 
   await fazerRequisicao(`/api/admin/jogo/${jogoId}`, {
     method: 'PUT',

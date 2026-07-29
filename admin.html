@@ -430,9 +430,21 @@
                     </div>
                 </div>
 
+                <div class="border-t border-slate-100 pt-4 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-file-pdf text-red-500 text-sm"></i>
+                        <h5 class="text-xs font-black text-slate-700 uppercase tracking-wide">Súmula em PDF</h5>
+                    </div>
+                    <p class="text-[10px] text-slate-400">Faça upload do PDF da súmula oficial deste jogo</p>
+                    <div class="flex items-center gap-3">
+                        <input type="file" id="sumulaPdfInput" accept=".pdf" class="block w-full text-[11px] text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 transition">
+                        <span id="sumulaPdfStatus" class="text-[10px] text-slate-400 font-semibold shrink-0"></span>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
                     <button type="button" onclick="fecharModalSumula()" class="px-4 py-2 text-xs font-extrabold text-slate-500 hover:text-slate-800 transition uppercase">Cancelar</button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Publicar Súmula</button>
+                    <button type="submit" id="btnPublicarSumula" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition shadow">Publicar Súmula</button>
                 </div>
             </form>
         </div>
@@ -1459,6 +1471,16 @@
             const ptsAtletasCasa = (jogoAtual && jogoAtual.pontosAtletasCasa) ? jogoAtual.pontosAtletasCasa : [];
             const ptsAtletasFora = (jogoAtual && jogoAtual.pontosAtletasFora) ? jogoAtual.pontosAtletasFora : [];
 
+            // Mostra se ja existe sumula PDF
+            const sumulaInput = document.getElementById('sumulaPdfInput');
+            const sumulaStatus = document.getElementById('sumulaPdfStatus');
+            if (jogoAtual && jogoAtual.sumulaPdfUrl) {
+                sumulaStatus.innerHTML = `<a href="${jogoAtual.sumulaPdfUrl}" target="_blank" class="text-red-600 underline font-bold">PDF anexado</a>`;
+            } else {
+                sumulaStatus.textContent = '';
+            }
+            sumulaInput.value = '';
+
             const atletasStorage = await carregarAtletasPorEquipe();
 
             function getAtletas(time) {
@@ -1569,6 +1591,27 @@
                 return;
             }
 
+            // Upload da sumula PDF (se selecionada)
+            let sumulaPdfUrl = '';
+            const sumulaInput = document.getElementById('sumulaPdfInput');
+            if (sumulaInput && sumulaInput.files && sumulaInput.files[0]) {
+                document.getElementById('btnPublicarSumula').disabled = true;
+                document.getElementById('btnPublicarSumula').textContent = 'Enviando PDF...';
+                try {
+                    const file = sumulaInput.files[0];
+                    const filePath = `sumulas/${jogoSendoEditadoId}.pdf`;
+                    const { error: uploadError } = await _supabase.storage.from('sumulas').upload(filePath, file, { upsert: true });
+                    if (uploadError) throw uploadError;
+                    const { data: publicData } = _supabase.storage.from('sumulas').getPublicUrl(filePath);
+                    sumulaPdfUrl = publicData.publicUrl;
+                } catch (e) {
+                    alert('Erro ao enviar PDF: ' + e.message);
+                    document.getElementById('btnPublicarSumula').disabled = false;
+                    document.getElementById('btnPublicarSumula').textContent = 'Publicar Súmula';
+                    return;
+                }
+            }
+
             // Carrega jogos do Supabase
             let jogos = await carregarJogos();
             let jogoIndex = -1;
@@ -1591,7 +1634,8 @@
                         pontosFora: ptFora,
                         status: "Publicado",
                         pontosAtletasCasa: dadosAtletasCasa,
-                        pontosAtletasFora: dadosAtletasFora
+                        pontosAtletasFora: dadosAtletasFora,
+                        sumulaPdfUrl: sumulaPdfUrl
                     });
                 }
             }
