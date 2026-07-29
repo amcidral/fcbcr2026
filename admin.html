@@ -1190,7 +1190,10 @@
             }
         }
 
-        function fazerLogout() {
+        async function fazerLogout() {
+            if (typeof _supabase !== 'undefined') {
+                await _supabase.auth.signOut();
+            }
             localStorage.removeItem('auth_token');
             localStorage.removeItem('usuario_id');
             localStorage.removeItem('usuario_nome');
@@ -1591,7 +1594,7 @@
                 return;
             }
 
-            // Upload da sumula PDF (se selecionada) via backend
+            // Upload da sumula PDF (se selecionada) direto no Supabase Storage
             let sumulaPdfUrl = '';
             const sumulaInput = document.getElementById('sumulaPdfInput');
             if (sumulaInput && sumulaInput.files && sumulaInput.files[0]) {
@@ -1599,24 +1602,11 @@
                 document.getElementById('btnPublicarSumula').textContent = 'Enviando PDF...';
                 try {
                     const file = sumulaInput.files[0];
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                    const token = localStorage.getItem('auth_token');
-                    const res = await fetch(_BACKEND_URL + '/api/admin/jogo/' + jogoSendoEditadoId + '/sumula', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}) },
-                        body: JSON.stringify({ base64 })
-                    });
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({ erro: res.statusText }));
-                        throw new Error(err.erro || 'Erro ' + res.status);
-                    }
-                    const data = await res.json();
-                    sumulaPdfUrl = data.sumulaPdfUrl;
+                    const filePath = `sumulas/${jogoSendoEditadoId}.pdf`;
+                    const { error: uploadError } = await _supabase.storage.from('sumulas').upload(filePath, file, { upsert: true });
+                    if (uploadError) throw uploadError;
+                    const { data: publicData } = _supabase.storage.from('sumulas').getPublicUrl(filePath);
+                    sumulaPdfUrl = publicData.publicUrl;
                 } catch (e) {
                     alert('Erro ao enviar PDF: ' + e.message);
                     document.getElementById('btnPublicarSumula').disabled = false;

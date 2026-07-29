@@ -1,30 +1,8 @@
 const _SUPABASE_URL = 'https://xunafmfsuqvcgvyettzs.supabase.co';
 const _SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1bmFmbWZzdXF2Y2d2eWV0dHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NzM1NzUsImV4cCI6MjEwMDA0OTU3NX0.cC7zqhdlAHfnuWlWtq9BaIxj6tjPjjAixb1aJg6d1Bg';
-const _BACKEND_URL = 'https://fcbcr-backend-production.up.railway.app';
-
 const _supabase = window.supabase.createClient(_SUPABASE_URL, _SUPABASE_ANON_KEY);
 
-function obterToken() {
-  return localStorage.getItem('auth_token');
-}
 
-async function fazerRequisicao(endpoint, opcoes = {}) {
-  const token = obterToken();
-  const headers = opcoes.headers || {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  
-  const res = await fetch(`${_BACKEND_URL}${endpoint}`, {
-    ...opcoes,
-    headers: { 'Content-Type': 'application/json', ...headers }
-  });
-  
-  if (!res.ok) {
-    const erro = await res.json().catch(() => ({ erro: res.statusText }));
-    throw new Error(erro.erro || `Erro ${res.status}`);
-  }
-  
-  return res.json();
-}
 
 const _cache = {};
 
@@ -215,31 +193,29 @@ async function carregarEscalas() {
 }
 
 // ============================================================
-// ESCRITAS — Via Backend (com auth JWT)
+// ESCRITAS — Direto no Supabase (RLS controla acesso)
 // ============================================================
 
 async function salvarJogo(jogo) {
   const mandanteId = await getEquipeId(jogo.casa);
   const visitanteId = jogo.fora && jogo.fora !== 'A definir' ? await getEquipeId(jogo.fora) : null;
 
-  const { dados } = await fazerRequisicao('/api/admin/jogo', {
-    method: 'POST',
-    body: JSON.stringify({
-      data: jogo.data,
-      hora: jogo.hora,
-      mandante_id: mandanteId,
-      visitante_id: visitanteId,
-      pontos_casa: jogo.pontosCasa !== undefined ? jogo.pontosCasa : null,
-      pontos_fora: jogo.pontosFora !== undefined ? jogo.pontosFora : null,
-      status: jogo.status || 'Agendado',
-      rodada: jogo.rodada || null,
-      local_jogo: jogo.local || null,
-      pontos_atletas_casa: jogo.pontosAtletasCasa || [],
-      pontos_atletas_fora: jogo.pontosAtletasFora || []
-    })
-  });
+  const { data, error } = await _supabase.from('jogos').insert({
+    data: jogo.data,
+    hora: jogo.hora,
+    mandante_id: mandanteId,
+    visitante_id: visitanteId,
+    pontos_casa: jogo.pontosCasa !== undefined ? jogo.pontosCasa : null,
+    pontos_fora: jogo.pontosFora !== undefined ? jogo.pontosFora : null,
+    status: jogo.status || 'Agendado',
+    rodada: jogo.rodada || null,
+    local_jogo: jogo.local || null,
+    pontos_atletas_casa: jogo.pontosAtletasCasa || [],
+    pontos_atletas_fora: jogo.pontosAtletasFora || []
+  }).select().single();
+  if (error) throw error;
   _limparCache('jogos');
-  return dados;
+  return data;
 }
 
 async function atualizarJogo(jogoId, campos) {
@@ -257,17 +233,14 @@ async function atualizarJogo(jogoId, campos) {
   if (campos.pontosAtletasFora !== undefined) dbCampos.pontos_atletas_fora = campos.pontosAtletasFora;
   if (campos.sumulaPdfUrl !== undefined) dbCampos.sumula_pdf_url = campos.sumulaPdfUrl;
 
-  await fazerRequisicao(`/api/admin/jogo/${jogoId}`, {
-    method: 'PUT',
-    body: JSON.stringify(dbCampos)
-  });
+  const { error } = await _supabase.from('jogos').update(dbCampos).eq('id', jogoId);
+  if (error) throw error;
   _limparCache('jogos');
 }
 
 async function excluirJogo(jogoId) {
-  await fazerRequisicao(`/api/admin/jogo/${jogoId}`, {
-    method: 'DELETE'
-  });
+  const { error } = await _supabase.from('jogos').delete().eq('id', jogoId);
+  if (error) throw error;
   _limparCache('jogos');
 }
 
@@ -276,17 +249,15 @@ async function salvarClassificacao(classificacao) {
     const equipeId = await getEquipeId(c.time);
     if (!equipeId) continue;
 
-    await fazerRequisicao('/api/admin/classificacao', {
-      method: 'POST',
-      body: JSON.stringify({
-        equipe_id: equipeId,
-        v: c.v,
-        d: c.d,
-        pts_pro: c.ptsPro,
-        pts_contra: c.ptsContra,
-        pts: c.pts ?? (c.v * 2 + c.d * 1)
-      })
-    });
+    const { error } = await _supabase.from('classificacao').upsert({
+      equipe_id: equipeId,
+      v: c.v,
+      d: c.d,
+      pts_pro: c.ptsPro,
+      pts_contra: c.ptsContra,
+      pts: c.pts ?? (c.v * 2 + c.d * 1)
+    }, { onConflict: 'equipe_id' });
+    if (error) throw error;
   }
   _limparCache('classificacao');
 }
@@ -295,43 +266,38 @@ async function salvarAtleta(atleta, equipeNome) {
   const equipeId = await getEquipeId(equipeNome);
   if (!equipeId) throw new Error('Equipe nao encontrada: ' + equipeNome);
 
-  const { dados } = await fazerRequisicao('/api/admin/atleta', {
-    method: 'POST',
-    body: JSON.stringify({
-      nome: atleta.nome,
-      camisa: atleta.camisa,
-      idade: atleta.idade,
-      classe: atleta.classe,
-      equipe_id: equipeId
-    })
-  });
+  const { data, error } = await _supabase.from('atletas').insert({
+    nome: atleta.nome,
+    camisa: atleta.camisa,
+    idade: atleta.idade,
+    classe: atleta.classe,
+    equipe_id: equipeId
+  }).select().single();
+  if (error) throw error;
 
   _limparCache('atletas');
-  return dados;
+  return data;
 }
 
 async function atualizarAtleta(atletaId, atleta, novaEquipeNome) {
   const equipeId = await getEquipeId(novaEquipeNome);
   if (!equipeId) throw new Error('Equipe nao encontrada: ' + novaEquipeNome);
 
-  await fazerRequisicao(`/api/admin/atleta/${atletaId}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      nome: atleta.nome,
-      camisa: atleta.camisa,
-      idade: atleta.idade,
-      classe: atleta.classe,
-      equipe_id: equipeId
-    })
-  });
+  const { error } = await _supabase.from('atletas').update({
+    nome: atleta.nome,
+    camisa: atleta.camisa,
+    idade: atleta.idade,
+    classe: atleta.classe,
+    equipe_id: equipeId
+  }).eq('id', atletaId);
+  if (error) throw error;
 
   _limparCache('atletas');
 }
 
 async function excluirAtleta(atletaId) {
-  await fazerRequisicao(`/api/admin/atleta/${atletaId}`, {
-    method: 'DELETE'
-  });
+  const { error } = await _supabase.from('atletas').delete().eq('id', atletaId);
+  if (error) throw error;
   _limparCache('atletas');
 }
 
@@ -342,14 +308,16 @@ async function salvarProfissional(prof) {
     categoria: prof.categoria,
     cidade: prof.cidade
   };
-  if (prof.id) registro.id = prof.id;
 
-  const { dados } = await fazerRequisicao('/api/admin/profissional', {
-    method: prof.id ? 'PUT' : 'POST',
-    body: JSON.stringify(registro)
-  });
+  let error;
+  if (prof.id) {
+    ({ error } = await _supabase.from('profissionais').update(registro).eq('id', prof.id));
+  } else {
+    ({ error } = await _supabase.from('profissionais').insert(registro));
+  }
+  if (error) throw error;
+
   _limparCache('profissionais');
-  return dados;
 }
 
 async function importarProfissionaisBulk(lista) {
@@ -362,68 +330,60 @@ async function importarProfissionaisBulk(lista) {
     cidade: p.cidade
   }));
 
-  const { dados } = await fazerRequisicao('/api/admin/profissionais/bulk', {
-    method: 'POST',
-    body: JSON.stringify({ profissionais: registros })
-  });
+  const { data, error } = await _supabase.from('profissionais').insert(registros).select();
+  if (error) throw error;
+
   _limparCache('profissionais');
-  return { adicionados: (dados || []).length };
+  return { adicionados: (data || []).length };
 }
 
 async function excluirProfissional(id) {
-  await fazerRequisicao(`/api/admin/profissional/${id}`, {
-    method: 'DELETE'
-  });
+  const { error } = await _supabase.from('profissionais').delete().eq('id', id);
+  if (error) throw error;
   _limparCache('profissionais');
 }
 
 async function salvarEscalaJogo(escala) {
-  await fazerRequisicao('/api/admin/escala', {
-    method: 'POST',
-    body: JSON.stringify({
-      jogo_id: escala.jogoId,
-      chefe: escala.chefe,
-      arbitro1: escala.arbitro1,
-      arbitro2: escala.arbitro2,
-      apontador: escala.apontador,
-      cronometrista: escala.cronometrista,
-      operador24: escala.operador24,
-      classificadora: escala.classificadora,
-      transporte: escala.transporte || ''
-    })
-  });
+  const { error } = await _supabase.from('escalas_jogos').upsert({
+    jogo_id: escala.jogoId,
+    chefe: escala.chefe,
+    arbitro1: escala.arbitro1,
+    arbitro2: escala.arbitro2,
+    apontador: escala.apontador,
+    cronometrista: escala.cronometrista,
+    operador24: escala.operador24,
+    classificadora: escala.classificadora,
+    transporte: escala.transporte || ''
+  }, { onConflict: 'jogo_id' });
+  if (error) throw error;
 }
 
 async function adicionarEquipe(equipe) {
-  const { dados } = await fazerRequisicao('/api/admin/equipe', {
-    method: 'POST',
-    body: JSON.stringify({
-      nome: equipe.nome,
-      nome_completo: equipe.nomeCompleto || '',
-      cidade: equipe.cidade,
-      estado: equipe.estado || 'SC',
-      logo: equipe.logo || ''
-    })
-  });
+  const { data, error } = await _supabase.from('equipes').insert({
+    nome: equipe.nome,
+    nome_completo: equipe.nomeCompleto || '',
+    cidade: equipe.cidade,
+    estado: equipe.estado || 'SC',
+    logo: equipe.logo || ''
+  }).select().single();
+  if (error) throw error;
 
   _limparCache();
-  return dados;
+  return data;
 }
 
 async function atualizarEquipe(nomeOriginal, dados) {
   const equipeId = await getEquipeId(nomeOriginal);
   if (!equipeId) throw new Error('Equipe nao encontrada');
 
-  await fazerRequisicao(`/api/admin/equipe/${equipeId}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      nome: dados.nome,
-      cidade: dados.cidade,
-      estado: dados.estado,
-      logo: dados.logo,
-      nome_completo: dados.nomeCompleto || ''
-    })
-  });
+  const { error } = await _supabase.from('equipes').update({
+    nome: dados.nome,
+    cidade: dados.cidade,
+    estado: dados.estado,
+    logo: dados.logo,
+    nome_completo: dados.nomeCompleto || ''
+  }).eq('id', equipeId);
+  if (error) throw error;
 
   _limparCache();
 }
@@ -431,11 +391,31 @@ async function atualizarEquipe(nomeOriginal, dados) {
 async function excluirEquipe(nome) {
   const equipeId = await getEquipeId(nome);
   if (!equipeId) return;
-  
-  await fazerRequisicao(`/api/admin/equipe/${equipeId}`, {
-    method: 'DELETE'
-  });
+
+  const { error } = await _supabase.from('equipes').delete().eq('id', equipeId);
+  if (error) throw error;
+
   _limparCache();
+}
+
+async function obterUsuarioLogado() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) return null;
+
+  // Restaura sessão no Supabase client (necessário para RLS)
+  try {
+    await _supabase.auth.setSession({ access_token: token, refresh_token: '' });
+  } catch (e) {
+    // Token inválido/expirado — mantém null
+    return null;
+  }
+
+  return {
+    id: localStorage.getItem('usuario_id'),
+    nome: localStorage.getItem('usuario_nome') || 'Usuário',
+    role: localStorage.getItem('usuario_role') || 'admin',
+    email: localStorage.getItem('usuario_email') || ''
+  };
 }
 
 async function contarAtletas() {
