@@ -1,7 +1,7 @@
 ﻿const _SB_TOKEN_KEY = 'sb-access-token';
 
 async function fazerLogin(email, senha) {
-  const { data, error } = await _supabase.auth.signInWithPassword({ email, senha });
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password: senha });
   if (error) throw new Error(error.message || 'Email ou senha inválidos');
 
   const user = data.user;
@@ -68,4 +68,14 @@ async function obterUsuarioLogado() {
     role: profile?.role || 'gestor',
     email: user.email || ''
   };
+}
+
+async function recuperarSenha(email, redirectTo) {
+  const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) throw error;
+}
+
+async function atualizarSenha(novaSenha) {
+  const { error } = await _supabase.auth.updateUser({ password: novaSenha });
+  if (error) throw error;
 }
