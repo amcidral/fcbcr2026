@@ -1190,33 +1190,36 @@
         // ==========================================
 
         function renderEquipesFull() {
+            const equipes = _dados.equipes;
             const classificacao = _dados.classificacao;
             const container = document.getElementById('corpoEquipesFull');
             container.innerHTML = '';
 
-            if (classificacao.length === 0) {
+            if (!equipes || equipes.length === 0) {
                 container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8 col-span-3">Nenhuma equipe cadastrada.</p>';
                 return;
             }
 
-            classificacao.sort((a, b) => b.pts - a.pts);
+            const classMap = {};
+            classificacao.forEach(c => { classMap[c.time] = c; });
 
-            classificacao.forEach(equipe => {
-                const atletas = _dados.atletasPorEquipe[equipe.time] || [];
+            equipes.forEach(eq => {
+                const cls = classMap[eq.nome] || {};
+                const atletas = _dados.atletasPorEquipe[eq.nome] || [];
                 container.innerHTML += `
-                    <div onclick="abrirModalEquipe('${equipe.time.replace(/'/g, "\\'")}')"
+                    <div onclick="abrirModalEquipe('${eq.nome.replace(/'/g, "\\'")}')"
                         class="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm hover:border-blue-400 hover:shadow transition cursor-pointer flex flex-col items-center gap-3">
                         <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center p-2 border border-slate-200 overflow-hidden">
-                            ${equipe.logo ? `<img src="${equipe.logo}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : '<i class="fa-solid fa-shield-halved text-2xl text-slate-400"></i>'}
+                            ${eq.logo ? `<img src="${eq.logo}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : '<i class="fa-solid fa-shield-halved text-2xl text-slate-400"></i>'}
                         </div>
                         <div class="text-center min-w-0 w-full">
-                            <p class="text-xs font-extrabold text-slate-800 truncate">${equipe.time}</p>
-                            <p class="text-[9px] text-slate-400 font-semibold">${equipe.cidade || ''}</p>
+                            <p class="text-xs font-extrabold text-slate-800 truncate">${eq.nome}</p>
+                            <p class="text-[9px] text-slate-400 font-semibold">${eq.cidade || eq.cidade || ''}</p>
                         </div>
                         <div class="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">${equipe.v}V</span>
-                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${equipe.d}D</span>
-                            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">${equipe.pts}pts</span>
+                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">${cls.v || 0}V</span>
+                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${cls.d || 0}D</span>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">${cls.pts || 0}pts</span>
                         </div>
                         <p class="text-[9px] text-slate-400 font-semibold">${atletas.length} atleta${atletas.length !== 1 ? 's' : ''}</p>
                     </div>
