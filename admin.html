@@ -1194,6 +1194,7 @@
             if (typeof _supabase !== 'undefined') {
                 await _supabase.auth.signOut();
             }
+            localStorage.removeItem('sb-access-token');
             localStorage.removeItem('usuario_id');
             localStorage.removeItem('usuario_nome');
             localStorage.removeItem('usuario_role');
