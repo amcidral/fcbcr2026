@@ -1747,6 +1747,14 @@
             const ptCasa = parseInt(document.getElementById('pontosCasa').value) || 0;
             const ptFora = parseInt(document.getElementById('pontosFora').value) || 0;
 
+            const sumulaInput = document.getElementById('sumulaPdfInput');
+            const temNovoPdf = sumulaInput && sumulaInput.files && sumulaInput.files[0];
+            const temPdfExistente = document.getElementById('sumulaPdfStatus').innerHTML.trim() !== '';
+            if (!temNovoPdf && !temPdfExistente) {
+                alert('É necessário anexar a súmula em PDF antes de publicar!');
+                return;
+            }
+
             let somaAtletasCasa = 0;
             const dadosAtletasCasa = [];
             document.querySelectorAll('.pontos-atleta-casa').forEach(input => {
