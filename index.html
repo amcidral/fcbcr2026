@@ -1346,6 +1346,9 @@
             `;
 
             // Atletas da equipe
+            const artMap = {};
+            _dados.artilharia.forEach(a => { artMap[a.atleta_id] = a.pontos; });
+
             html += `
                 <div>
                     <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
@@ -1353,16 +1356,20 @@
                     </h4>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         ${atletas.length === 0 ? '<p class="text-xs text-slate-400 col-span-3 text-center py-4">Nenhum atleta cadastrado.</p>' :
-                            atletas.map(a => `
-                                <div onclick="fecharModalEquipe();setTimeout(()=>abrirModalJogador(${a.id}),300)"
-                                    class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 hover:bg-purple-50 hover:border-purple-200 transition cursor-pointer">
-                                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-black text-xs flex items-center justify-center shrink-0">${a.camisa || '?'}</div>
-                                    <div class="min-w-0">
-                                        <p class="text-[10px] font-bold text-slate-700 truncate">${a.nome}</p>
-                                        <p class="text-[8px] text-slate-400 font-semibold">${a.classe || ''}</p>
+                            atletas.map(a => {
+                                const pts = artMap[a.id] || 0;
+                                return `
+                                    <div onclick="fecharModalEquipe();setTimeout(()=>abrirModalJogador(${a.id}),300)"
+                                        class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 hover:bg-purple-50 hover:border-purple-200 transition cursor-pointer">
+                                        <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-black text-xs flex items-center justify-center shrink-0">${a.camisa || '?'}</div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[10px] font-bold text-slate-700 truncate">${a.nome}</p>
+                                            <p class="text-[8px] text-slate-400 font-semibold">${a.classe || ''}</p>
+                                        </div>
+                                        <span class="text-xs font-black text-blue-600 shrink-0">${pts}</span>
                                     </div>
-                                </div>
-                            `).join('')
+                                `;
+                            }).join('')
                         }
                     </div>
                 </div>
