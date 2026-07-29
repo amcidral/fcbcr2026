@@ -36,20 +36,59 @@ $$;
 -- ==========================================
 DROP POLICY IF EXISTS "Leitura publica" ON profiles;
 DROP POLICY IF EXISTS "Auth escreve" ON profiles;
+DROP POLICY IF EXISTS "profiles_select" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert" ON profiles;
+DROP POLICY IF EXISTS "profiles_update" ON profiles;
+DROP POLICY IF EXISTS "profiles_delete" ON profiles;
+
 DROP POLICY IF EXISTS "Leitura publica" ON equipes;
 DROP POLICY IF EXISTS "Auth escreve" ON equipes;
+DROP POLICY IF EXISTS "equipes_select" ON equipes;
+DROP POLICY IF EXISTS "equipes_insert" ON equipes;
+DROP POLICY IF EXISTS "equipes_update" ON equipes;
+DROP POLICY IF EXISTS "equipes_delete" ON equipes;
+
 DROP POLICY IF EXISTS "Leitura publica" ON atletas;
 DROP POLICY IF EXISTS "Auth escreve" ON atletas;
+DROP POLICY IF EXISTS "atletas_select" ON atletas;
+DROP POLICY IF EXISTS "atletas_insert" ON atletas;
+DROP POLICY IF EXISTS "atletas_update" ON atletas;
+DROP POLICY IF EXISTS "atletas_delete" ON atletas;
+
 DROP POLICY IF EXISTS "Leitura publica" ON jogos;
 DROP POLICY IF EXISTS "Auth escreve" ON jogos;
+DROP POLICY IF EXISTS "jogos_select" ON jogos;
+DROP POLICY IF EXISTS "jogos_insert" ON jogos;
+DROP POLICY IF EXISTS "jogos_update" ON jogos;
+DROP POLICY IF EXISTS "jogos_delete" ON jogos;
+
 DROP POLICY IF EXISTS "Leitura publica" ON classificacao;
 DROP POLICY IF EXISTS "Auth escreve" ON classificacao;
+DROP POLICY IF EXISTS "classificacao_select" ON classificacao;
+DROP POLICY IF EXISTS "classificacao_insert" ON classificacao;
+DROP POLICY IF EXISTS "classificacao_update" ON classificacao;
+DROP POLICY IF EXISTS "classificacao_delete" ON classificacao;
+
 DROP POLICY IF EXISTS "Leitura publica" ON artilharia;
 DROP POLICY IF EXISTS "Auth escreve" ON artilharia;
+DROP POLICY IF EXISTS "artilharia_select" ON artilharia;
+DROP POLICY IF EXISTS "artilharia_insert" ON artilharia;
+DROP POLICY IF EXISTS "artilharia_update" ON artilharia;
+DROP POLICY IF EXISTS "artilharia_delete" ON artilharia;
+
 DROP POLICY IF EXISTS "Leitura publica" ON profissionais;
 DROP POLICY IF EXISTS "Auth escreve" ON profissionais;
+DROP POLICY IF EXISTS "profissionais_select" ON profissionais;
+DROP POLICY IF EXISTS "profissionais_insert" ON profissionais;
+DROP POLICY IF EXISTS "profissionais_update" ON profissionais;
+DROP POLICY IF EXISTS "profissionais_delete" ON profissionais;
+
 DROP POLICY IF EXISTS "Leitura publica" ON escalas_jogos;
 DROP POLICY IF EXISTS "Auth escreve" ON escalas_jogos;
+DROP POLICY IF EXISTS "escalas_select" ON escalas_jogos;
+DROP POLICY IF EXISTS "escalas_insert" ON escalas_jogos;
+DROP POLICY IF EXISTS "escalas_update" ON escalas_jogos;
+DROP POLICY IF EXISTS "escalas_delete" ON escalas_jogos;
 
 -- ==========================================
 -- 4. POLÍTICAS — PROFILES
