@@ -382,7 +382,7 @@ async function salvarEscalaJogo(escala) {
       cronometrista: escala.cronometrista,
       operador24: escala.operador24,
       classificadora: escala.classificadora,
-      transporte: escala.transporte || []
+      transporte: escala.transporte || ''
     })
   });
 }

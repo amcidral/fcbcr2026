@@ -1059,26 +1059,23 @@
             const jogosAtleta = jogosArtilharia.map(ja => {
                 const jogo = jogosMap[ja.jogoId];
                 let timeDoAtleta = '';
-                let adversario = ja.adversario || '';
+                let adversario = '';
+                let placar = '';
                 if (jogo) {
-                    const ptsCasa = jogo.pontosAtletasCasa || [];
-                    const ptsFora = jogo.pontosAtletasFora || [];
-                    const ptsEsteJogo = [...ptsCasa, ...ptsFora].find(p => p.id === atleta.atleta_id);
-                    if (ptsEsteJogo) {
-                        timeDoAtleta = ptsEsteJogo.time;
-                        adversario = ptsEsteJogo.time === jogo.casa ? jogo.fora : jogo.casa;
-                    } else {
-                        timeDoAtleta = atleta.time;
-                    }
+                    timeDoAtleta = jogo.casa;
+                    adversario = jogo.fora;
+                    placar = `${jogo.pontosCasa} x ${jogo.pontosFora}`;
                 } else {
                     timeDoAtleta = atleta.time;
+                    adversario = ja.adversario || '';
                 }
                 return {
                     jogoId: ja.jogoId,
                     timeDoAtleta: timeDoAtleta,
                     adversario: adversario,
                     data: ja.data || (jogo ? jogo.data : ''),
-                    pontos: ja.pontos
+                    pontos: ja.pontos,
+                    placar: placar
                 };
             }).filter(j => j.pontos > 0);
 
@@ -1108,7 +1105,8 @@
                                     <span class="text-[8px] font-normal mt-0.5">${partesData[1] || ''}</span>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-bold text-slate-700">${j.timeDoAtleta || atleta.time} vs ${j.adversario}</p>
+                                    <p class="text-xs font-bold text-slate-700">${j.timeDoAtleta} vs ${j.adversario}</p>
+                                    ${j.placar ? `<p class="text-[10px] text-slate-500 font-semibold">${j.placar}</p>` : ''}
                                 </div>
                             </div>
                             <div class="text-right">
