@@ -1,27 +1,53 @@
 ﻿async function fazerLogin(email, senha) {
-  try {
-    const res = await fetch('https://fcbcr-backend-production.up.railway.app/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, senha })
-    });
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, senha });
+  if (error) throw new Error(error.message || 'Email ou senha inválidos');
 
-    if (!res.ok) {
-      const erro = await res.json();
-      throw new Error(erro.erro || 'Email ou senha inválidos');
-    }
+  const user = data.user;
 
-    const { token, usuario } = await res.json();
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('usuario_id', usuario.id);
-    localStorage.setItem('usuario_nome', usuario.nome || '');
-    localStorage.setItem('usuario_role', usuario.role || 'admin');
-    localStorage.setItem('usuario_email', usuario.email || '');
+  // Busca o profile (nome + role) na tabela profiles
+  const { data: profile, error: profileError } = await _supabase
+    .from('profiles')
+    .select('nome, role')
+    .eq('id', user.id)
+    .single();
 
-    if (typeof _supabase !== 'undefined') {
-      await _supabase.auth.setSession({ access_token: token, refresh_token: '' });
-    }
-  } catch (e) {
-    throw e;
+  if (!profileError && profile) {
+    localStorage.setItem('usuario_nome', profile.nome || '');
+    localStorage.setItem('usuario_role', profile.role || 'gestor');
+  } else {
+    localStorage.setItem('usuario_nome', user.email || 'Usuário');
+    localStorage.setItem('usuario_role', 'gestor');
   }
+
+  localStorage.setItem('usuario_id', user.id);
+  localStorage.setItem('usuario_email', user.email || '');
+}
+
+async function obterUsuarioLogado() {
+  const { data: { session }, error } = await _supabase.auth.getSession();
+  if (error || !session) return null;
+
+  const user = session.user;
+
+  // Busca profile para obter nome + role
+  const { data: profile } = await _supabase
+    .from('profiles')
+    .select('nome, role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile) {
+    localStorage.setItem('usuario_nome', profile.nome || '');
+    localStorage.setItem('usuario_role', profile.role || 'gestor');
+  }
+
+  localStorage.setItem('usuario_id', user.id);
+  localStorage.setItem('usuario_email', user.email || '');
+
+  return {
+    id: user.id,
+    nome: profile?.nome || user.email || 'Usuário',
+    role: profile?.role || 'gestor',
+    email: user.email || ''
+  };
 }

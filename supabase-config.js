@@ -398,26 +398,6 @@ async function excluirEquipe(nome) {
   _limparCache();
 }
 
-async function obterUsuarioLogado() {
-  const token = localStorage.getItem('auth_token');
-  if (!token) return null;
-
-  // Restaura sessão no Supabase client (necessário para RLS)
-  try {
-    await _supabase.auth.setSession({ access_token: token, refresh_token: '' });
-  } catch (e) {
-    // Token inválido/expirado — mantém null
-    return null;
-  }
-
-  return {
-    id: localStorage.getItem('usuario_id'),
-    nome: localStorage.getItem('usuario_nome') || 'Usuário',
-    role: localStorage.getItem('usuario_role') || 'admin',
-    email: localStorage.getItem('usuario_email') || ''
-  };
-}
-
 async function contarAtletas() {
   try {
     const atletas = await carregarAtletasPorEquipe();
