@@ -1826,14 +1826,15 @@
                     ptCasaAntigo = jogos[jogoIndex].pontosCasa || 0;
                     ptForaAntigo = jogos[jogoIndex].pontosFora || 0;
 
-                    await atualizarJogo(jogoSendoEditadoId, {
+                    const atualizacao = {
                         pontosCasa: ptCasa,
                         pontosFora: ptFora,
                         status: "Publicado",
                         pontosAtletasCasa: dadosAtletasCasa,
-                        pontosAtletasFora: dadosAtletasFora,
-                        sumulaPdfUrl: sumulaPdfUrl
-                    });
+                        pontosAtletasFora: dadosAtletasFora
+                    };
+                    if (sumulaPdfUrl) atualizacao.sumulaPdfUrl = sumulaPdfUrl;
+                    await atualizarJogo(jogoSendoEditadoId, atualizacao);
                 }
             }
 
