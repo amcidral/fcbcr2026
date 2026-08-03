@@ -675,6 +675,19 @@
                     return cl && cl.logo ? cl.logo : '';
                 };
 
+                const jogosPorRodada = [...jogos].sort((a, b) => {
+                    const [d1, m1] = String(a.data || '').split('/').map(Number);
+                    const [d2, m2] = String(b.data || '').split('/').map(Number);
+                    const dataA = new Date(2026, (m1 || 1) - 1, d1 || 1);
+                    const dataB = new Date(2026, (m2 || 1) - 1, d2 || 1);
+                    if (dataA - dataB !== 0) return dataA - dataB;
+                    const horaCompare = (a.hora || '').localeCompare(b.hora || '');
+                    if (horaCompare !== 0) return horaCompare;
+                    return (a.id || 0) - (b.id || 0);
+                });
+                const rodadaPorJogo = {};
+                jogosPorRodada.forEach((j, i) => { rodadaPorJogo[j.id] = String(i + 1).padStart(2, '0'); });
+
                 proximos.slice(0, 3).forEach((jogo, index) => {
                     const logoCasa = getLogo(jogo.casa);
                     const logoFora = getLogo(jogo.fora);
@@ -692,7 +705,7 @@
                                     </div>
                                     <div class="text-xs text-slate-500 font-bold">${jogo.hora}</div>
                                 </div>
-                                <span class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold uppercase">Rodada ${index + 15}</span>
+                                <span class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold uppercase">Rodada ${rodadaPorJogo[jogo.id] || index + 15}</span>
                             </div>
 
                             <div class="flex items-center justify-around gap-2">

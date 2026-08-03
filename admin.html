@@ -562,7 +562,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rodada</label>
-                        <input type="number" id="partidaRodada" min="1" max="20" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 5">
+                        <input type="number" id="partidaRodada" min="1" max="99" required class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition" placeholder="Ex: 5">
                     </div>
                 </div>
 
@@ -629,7 +629,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rodada</label>
-                        <input type="number" id="editPartidaRodada" min="1" max="20" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: 5">
+                        <input type="number" id="editPartidaRodada" min="1" max="99" class="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition" placeholder="Ex: 5">
                     </div>
                 </div>
 
@@ -1556,7 +1556,7 @@
             document.getElementById('editSelectVisitante').value = jogo.fora;
             document.getElementById('editPartidaData').value = jogo.data;
             document.getElementById('editPartidaHora').value = jogo.hora;
-            document.getElementById('editPartidaRodada').value = jogo.rodada || '';
+            document.getElementById('editPartidaRodada').value = calcularRodadaJogo(jogos, jogo);
             document.getElementById('editPartidaLocal').value = jogo.local || '';
             document.getElementById('editPartidaPtCasa').value = (jogo.pontosCasa !== null && jogo.pontosCasa !== undefined) ? jogo.pontosCasa : '';
             document.getElementById('editPartidaPtFora').value = (jogo.pontosFora !== null && jogo.pontosFora !== undefined) ? jogo.pontosFora : '';
@@ -2054,13 +2054,19 @@
             }, 320);
         }
 
-        function abrirModalPartida() {
+        async function abrirModalPartida() {
             const modal = document.getElementById('modalPartida');
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.querySelector('.transform').classList.remove('scale-95');
             }, 10);
+            try {
+                const jogos = await carregarJogos();
+                const proximaRodada = jogos.length > 0 ? ordenarJogosPorData(jogos).length + 1 : 1;
+                const inputRodada = document.getElementById('partidaRodada');
+                if (inputRodada) inputRodada.value = proximaRodada;
+            } catch (e) { }
         }
 
         function fecharModalPartida() {
@@ -2883,7 +2889,7 @@
                         html += '<p class="text-[9px] text-slate-400 font-semibold mt-0.5">';
                         html += '<i class="fa-regular fa-calendar mr-1"></i>' + j.data + ' as ' + j.hora;
                         if (j.local) html += ' | <i class="fa-solid fa-location-dot mr-1"></i>' + j.local;
-                        if (j.rodada) html += ' | Rodada ' + j.rodada;
+                        html += ' | Rodada ' + calcularRodadaJogo(jogos, j);
                         html += ' | Placar: <strong class="text-slate-600">' + placar + '</strong>';
                         html += '</p></div>';
 
@@ -2930,6 +2936,26 @@
         // GERAR PDF DA ESCALA
         // ==========================================
         let _cacheLogoBase64 = null;
+
+        function ordenarJogosPorData(jogos) {
+            return [...jogos].sort((a, b) => {
+                const [d1, m1] = String(a.data || '').split('/').map(Number);
+                const [d2, m2] = String(b.data || '').split('/').map(Number);
+                const dataA = new Date(2026, (m1 || 1) - 1, d1 || 1);
+                const dataB = new Date(2026, (m2 || 1) - 1, d2 || 1);
+                if (dataA - dataB !== 0) return dataA - dataB;
+                const horaCompare = (a.hora || '').localeCompare(b.hora || '');
+                if (horaCompare !== 0) return horaCompare;
+                return (a.id || 0) - (b.id || 0);
+            });
+        }
+
+        function calcularRodadaJogo(jogos, jogo) {
+            const ordenados = ordenarJogosPorData(jogos);
+            const idx = ordenados.findIndex(j => j.id === jogo.id);
+            if (idx >= 0) return String(idx + 1).padStart(2, '0');
+            return jogo.rodada != null && jogo.rodada !== '' ? String(jogo.rodada).padStart(2, '0') : 'A definir';
+        }
 
         async function carregarLogoBase64() {
             if (_cacheLogoBase64) return _cacheLogoBase64;
@@ -3009,7 +3035,7 @@
                     ['Data:', String(jogo.data || '')],
                     ['Horario:', String(jogo.hora || '')],
                     ['Local:', String(jogo.local || 'A definir')],
-                    ['Rodada:', String(jogo.rodada ?? 'A definir')],
+                    ['Rodada:', calcularRodadaJogo(jogos, jogo)],
                     ['Status:', String(jogo.status || 'Agendado')],
                     ['Placar:', String(placar)]
                 ];
